@@ -15,6 +15,7 @@ import ReadingPage from './pages/ReadingPage';
 import HandwritingPage from './pages/HandwritingPage';
 import GeneratorPage from './pages/GeneratorPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import Onboarding from './pages/Onboarding';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AccessibilityToolbar from './components/common/AccessibilityToolbar';
 import DyslexiaProvider from './components/common/DyslexiaProvider';
@@ -81,6 +82,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/onboarding" element={<Onboarding />} />
             </Routes>
           </Router>
           <AccessibilityToolbar />

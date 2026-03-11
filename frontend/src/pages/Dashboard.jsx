@@ -341,6 +341,15 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-300">Track your learning journey</p>
                 </div>
               </Link>
+
+              {/* Dyslexia Screening */}
+              <Link to="/onboarding" className="group">
+                <div className="bg-gradient-to-br from-rose-600/30 to-pink-600/30 backdrop-blur-sm border-2 border-rose-400/30 p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl hover:border-rose-400/60 hover:scale-105 transition-all duration-300 h-full">
+                  <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">🧠</div>
+                  <h3 className="text-sm sm:text-base font-bold text-white mb-1">Dyslexia Screening</h3>
+                  <p className="text-xs text-gray-300">Quick assessment & personalized tips</p>
+                </div>
+              </Link>
             </div>
           </div>
 

@@ -16,7 +16,16 @@ import time
 import json
 import threading
 from io import BytesIO
-from PIL import Image, ImageEnhance, ImageFilter
+try:
+    from PIL import Image, ImageEnhance, ImageFilter
+except ImportError:
+    Image = None
+    ImageEnhance = None
+    ImageFilter = None
+    print("⚠️  Pillow not installed — handwriting image enhancement disabled")
+
+from app.routers import assessment as assessment_router
+from app.services.severity_model import load_model as load_severity_model
 
 # Global rate limiter for Gemini API (free tier: ~15 RPM)
 _gemini_lock = threading.Lock()
@@ -78,6 +87,16 @@ app.add_middleware(
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+# Register assessment screening router
+app.include_router(assessment_router.router)
+
+# Preload ML severity model at startup
+try:
+    load_severity_model()
+    print("✅ Dyslexia severity model preloaded successfully")
+except FileNotFoundError as e:
+    print(f"⚠️  ML model not found: {e}")
 
 # Pydantic models
 class LectureCreate(BaseModel):
@@ -522,6 +541,8 @@ async def analyze_handwriting(file: UploadFile = File(...), userId: str = "anony
         
         # Enhance image for better OCR/analysis
         try:
+            if Image is None:
+                raise ImportError("Pillow not installed")
             img = Image.open(BytesIO(file_content))
             # Convert to RGB if needed (handles RGBA, grayscale, etc.)
             if img.mode != 'RGB':
