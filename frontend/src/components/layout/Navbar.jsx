@@ -6,20 +6,52 @@
 // Uses dyslexia-friendly font and accessible design
 // Background: white with shadow
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../common/Button';
 import StarBorder from '../common/StarBorder';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, ChevronDown } from 'lucide-react';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+  const [dashboardVisited, setDashboardVisited] = useState(false);
   const { isDark, toggleTheme } = useTheme();
   const { currentUser, logout } = useAuth();
-  
+
+  // Check if dashboard has been visited
+  useEffect(() => {
+    const visited = localStorage.getItem('dashboardVisited') === 'true';
+    setDashboardVisited(visited);
+  }, []);
+
+  // Update state when dashboard is visited (listen for storage changes)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const visited = localStorage.getItem('dashboardVisited') === 'true';
+      setDashboardVisited(visited);
+    };
+
+    // Listen for custom event from Dashboard
+    const handleDashboardVisit = () => {
+      const visited = localStorage.getItem('dashboardVisited') === 'true';
+      setDashboardVisited(visited);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleStorageChange);
+    window.addEventListener('dashboardVisited', handleDashboardVisit);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleStorageChange);
+      window.removeEventListener('dashboardVisited', handleDashboardVisit);
+    };
+  }, []);
+
   return (
     <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-colors duration-300 touch-none">
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
@@ -27,11 +59,11 @@ export default function Navbar() {
           {/* Logo section */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             <span className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-              
-              <span className="bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">SimplifiED</span>
+
+              <span className="bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">NeuroLex</span>
             </span>
           </Link>
-          
+
           {/* Desktop navigation links */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             <Link to="/" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
@@ -43,6 +75,28 @@ export default function Navbar() {
             <Link to="/dashboard" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
               Dashboard
             </Link>
+
+            {/* AI Learning Tools - Only show after dashboard visit */}
+            {dashboardVisited && (
+              <>
+                <Link to="/reading" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
+                  Reading Assistant
+                </Link>
+                <Link to="/handwriting" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
+                  Handwriting
+                </Link>
+                <Link to="/generator" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
+                  Generator
+                </Link>
+                <Link to="/analytics" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
+                  Analytics
+                </Link>
+                <Link to="/onboarding" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
+                  Screening
+                </Link>
+              </>
+            )}
+
             <Link to="/games" className="text-gray-300 hover:text-white font-semibold transition-colors text-sm lg:text-base">
               Games
             </Link>
@@ -50,7 +104,7 @@ export default function Navbar() {
               About
             </Link>
           </div>
-          
+
           {/* Sign in button or user menu */}
           <div className="hidden lg:flex items-center gap-3 xl:gap-4">
             {!currentUser ? (
@@ -75,18 +129,17 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                    isDark
-                      ? 'bg-gray-700 text-white hover:bg-gray-600'
-                      : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${isDark
+                    ? 'bg-gray-700 text-white hover:bg-gray-600'
+                    : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                    }`}
                 >
                   <span className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
                     {currentUser.email?.[0].toUpperCase()}
                   </span>
                   <span className="hidden sm:inline">{currentUser.displayName || currentUser.email?.split('@')[0]}</span>
                 </button>
-                
+
                 {userMenuOpen && (
                   <div className={`absolute right-0 mt-2 w-64 rounded-lg shadow-lg z-50 overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-white'}`}>
                     <div className={`px-4 py-3 border-b ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
@@ -118,10 +171,10 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          
+
           {/* Mobile menu button */}
           {/* Shows on mobile, hidden on desktop */}
-          <button 
+          <button
             className={`lg:hidden p-2 -mr-2 ${isDark ? 'text-gray-300 hover:text-white' : 'text-textDark hover:text-primary'}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle mobile menu"
@@ -132,7 +185,7 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-      
+
       {/* Mobile menu */}
       {/* Shows when mobileMenuOpen is true */}
       {mobileMenuOpen && (
@@ -147,6 +200,28 @@ export default function Navbar() {
             <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className={`block py-2 px-2 rounded text-base sm:text-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-textDark hover:text-primary hover:bg-gray-100'} font-semibold transition-colors`}>
               Dashboard
             </Link>
+
+            {/* AI Learning Tools - Only show after dashboard visit */}
+            {dashboardVisited && (
+              <>
+                <Link to="/reading" onClick={() => setMobileMenuOpen(false)} className={`block py-2 px-2 rounded text-base sm:text-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-textDark hover:text-primary hover:bg-gray-100'} font-semibold transition-colors`}>
+                  📖 Reading Assistant
+                </Link>
+                <Link to="/handwriting" onClick={() => setMobileMenuOpen(false)} className={`block py-2 px-2 rounded text-base sm:text-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-textDark hover:text-primary hover:bg-gray-100'} font-semibold transition-colors`}>
+                  ✍️ Handwriting
+                </Link>
+                <Link to="/generator" onClick={() => setMobileMenuOpen(false)} className={`block py-2 px-2 rounded text-base sm:text-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-textDark hover:text-primary hover:bg-gray-100'} font-semibold transition-colors`}>
+                  ✨ Generator
+                </Link>
+                <Link to="/analytics" onClick={() => setMobileMenuOpen(false)} className={`block py-2 px-2 rounded text-base sm:text-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-textDark hover:text-primary hover:bg-gray-100'} font-semibold transition-colors`}>
+                  📊 Analytics
+                </Link>
+                <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)} className={`block py-2 px-2 rounded text-base sm:text-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-textDark hover:text-primary hover:bg-gray-100'} font-semibold transition-colors`}>
+                  🧠 Screening
+                </Link>
+              </>
+            )}
+
             <Link to="/games" onClick={() => setMobileMenuOpen(false)} className={`block py-2 px-2 rounded text-base sm:text-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-textDark hover:text-primary hover:bg-gray-100'} font-semibold transition-colors`}>
               Games
             </Link>

@@ -1,4 +1,4 @@
-// Lecture page with live transcription and AI processing
+﻿// Lecture page with live transcription and AI processing
 // Side-by-side layout: Audio recorder on left, tabs on right
 // 5 tabs: Live Transcription, Simple Text, Detailed Steps, Mind Map, Summary
 
@@ -365,7 +365,7 @@ export default function LecturePage() {
         return (
           <div className="space-y-4">
             <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Final simplified summary
+              Final NeuroLex summary
             </p>
             <TTSButton content={summary} />
             {loadingSummary ? (

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * KalmanFilter2D — A lightweight 2-state Kalman filter for smoothing
  * 2D gaze coordinates (x, y). Uses plain JS arrays, NOT TensorFlow tensors.
  *
@@ -20,7 +20,7 @@ export default class KalmanFilter2D {
     private x: number;
     private y: number;
 
-    // Error covariance (2×2 diagonal — simplified)
+    // Error covariance (2×2 diagonal — NeuroLex)
     private px: number;
     private py: number;
 

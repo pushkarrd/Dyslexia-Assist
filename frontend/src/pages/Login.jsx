@@ -1,4 +1,4 @@
-// Login page for SimplifiED
+﻿// Login page for NeuroLex
 // Full page with same theme as the app
 
 import React, { useState } from 'react';
@@ -172,7 +172,7 @@ export default function Login() {
                 }`}
               >
                 <span>📚</span>
-                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">SimplifiED</span>
+                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">NeuroLex</span>
               </motion.div>
             </Link>
             <motion.h2 

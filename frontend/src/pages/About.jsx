@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import Navbar from '../components/layout/Navbar';
 import Silk from '../components/common/Silk';
 import { Mic, Radio, Bot, Save } from 'lucide-react';
@@ -55,7 +55,7 @@ export default function About() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16 md:mb-20">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 leading-tight text-white drop-shadow-lg">
-                How SimplifiED Works
+                How NeuroLex Works
               </h2>
               <p className="text-lg md:text-xl text-gray-100 max-w-2xl mx-auto drop-shadow-md">
                 Three-step detection pipeline
@@ -144,7 +144,7 @@ export default function About() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 mb-12">
               {/* Brand */}
               <div>
-                <h3 className="text-2xl font-black mb-4">SimplifiED</h3>
+                <h3 className="text-2xl font-black mb-4">NeuroLex</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">
                   Making education accessible for everyone, one lecture at a time.
                 </p>
@@ -182,7 +182,7 @@ export default function About() {
             </div>
             
             <div className={`border-t ${isDark ? 'border-gray-800' : 'border-gray-800'} pt-8 text-center text-gray-400 text-sm`}>
-              <p>Made with ❤️ by Code Lunatics • SimplifiED © 2024. All rights reserved.</p>
+              <p>Made with ❤️ by Code Lunatics • NeuroLex © 2024. All rights reserved.</p>
             </div>
           </div>
         </footer>

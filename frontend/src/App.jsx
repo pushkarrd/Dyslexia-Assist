@@ -1,4 +1,4 @@
-// Main App component for SimplifiED
+﻿// Main App component for NeuroLex
 // Routes: / (Landing), /dashboard, /lecture, /reading, /handwriting, /generator, /analytics
 // Uses AuthProvider, ThemeProvider, DyslexiaProvider and ProtectedRoute for auth
 // AccessibilityToolbar + ReadingRuler available on all pages

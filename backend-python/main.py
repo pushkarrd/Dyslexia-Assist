@@ -1,11 +1,20 @@
-"""
-FastAPI backend with Ollama integration for SimplifiED
+﻿"""
+FastAPI backend with Ollama integration for NeuroLex
 Processes lecture transcriptions using local Ollama LLM
 """
+
+# Fix Windows console encoding — Python defaults to cp1252 on Windows which
+# crashes on emoji/Unicode chars returned by Gemini AI responses.
+import sys
+import io
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 from fastapi import FastAPI, HTTPException, File, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
@@ -13,19 +22,23 @@ import os
 from dotenv import load_dotenv
 import requests
 import time
+import asyncio
 import json
 import threading
+import traceback
 from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor
 try:
     from PIL import Image, ImageEnhance, ImageFilter
 except ImportError:
     Image = None
     ImageEnhance = None
     ImageFilter = None
-    print("⚠️  Pillow not installed — handwriting image enhancement disabled")
+    print("[WARNING] Pillow not installed -- handwriting image enhancement disabled")
 
 from app.routers import assessment as assessment_router
 from app.routers import games as games_router
+from app.routers import tts as tts_router
 from app.services.severity_model import load_model as load_severity_model
 
 # Global rate limiter for Gemini API (free tier: ~15 RPM for 2.0-flash)
@@ -37,7 +50,7 @@ MIN_CALL_INTERVAL = 4  # seconds between Gemini API calls (conservative for free
 load_dotenv()
 
 # Initialize FastAPI
-app = FastAPI(title="SimplifiED Backend")
+app = FastAPI(title="NeuroLex Backend")
 
 # Configure CORS - Allow frontend origins (including all Vercel deployments)
 # Vercel creates multiple URLs: production + preview deployments
@@ -92,13 +105,14 @@ db = firestore.client()
 # Register assessment screening router
 app.include_router(assessment_router.router)
 app.include_router(games_router.router)
+app.include_router(tts_router.router)
 
 # Preload ML severity model at startup
 try:
     load_severity_model()
-    print("✅ Dyslexia severity model preloaded successfully")
+    print("[OK] Dyslexia severity model preloaded successfully")
 except FileNotFoundError as e:
-    print(f"⚠️  ML model not found: {e}")
+    print(f"[WARNING] ML model not found: {e}")
 
 # Pydantic models
 class LectureCreate(BaseModel):
@@ -106,11 +120,11 @@ class LectureCreate(BaseModel):
     transcription: str
 
 class LectureUpdate(BaseModel):
-    transcription: str = None
-    simpleText: str = None
-    detailedSteps: str = None
-    mindMap: str = None
-    summary: str = None
+    transcription: Optional[str] = None
+    simpleText: Optional[str] = None
+    detailedSteps: Optional[str] = None
+    mindMap: Optional[str] = None
+    summary: Optional[str] = None
 
 # Google Gemini API Configuration (native REST API)
 # Supports multiple API keys for rotation (comma-separated in GEMINI_API_KEYS env var)
@@ -123,11 +137,15 @@ if not _all_gemini_keys:
 
 _current_key_index = 0
 
+if not _all_gemini_keys:
+    print("[WARNING] No Gemini API key configured! Set GEMINI_API_KEY or GEMINI_API_KEYS env var. "
+          "Endpoints that use Gemini AI will return 500 errors.")
+
 def _get_gemini_key() -> str:
     """Get the current Gemini API key, rotating if multiple are available."""
     global _current_key_index
     if not _all_gemini_keys:
-        raise HTTPException(status_code=500, detail="No Gemini API key configured")
+        raise RuntimeError("No Gemini API key configured")
     return _all_gemini_keys[_current_key_index % len(_all_gemini_keys)]
 
 def _rotate_gemini_key():
@@ -135,7 +153,7 @@ def _rotate_gemini_key():
     global _current_key_index
     if len(_all_gemini_keys) > 1:
         _current_key_index = (_current_key_index + 1) % len(_all_gemini_keys)
-        print(f"🔄 Rotated to Gemini API key #{_current_key_index + 1}/{len(_all_gemini_keys)}")
+        print(f"[ROTATE] Switched to Gemini API key #{_current_key_index + 1}/{len(_all_gemini_keys)}")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")  # Kept for backward compat
 GEMINI_MODEL = "gemini-2.5-flash"  # Gemini model for text tasks
@@ -144,7 +162,7 @@ GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
 @app.get("/")
 async def root():
-    return {"message": "SimplifiED Backend with Gemini AI", "status": "running"}
+    return {"message": "NeuroLex Backend with Gemini AI", "status": "running"}
 
 @app.get("/health")
 async def health_check():
@@ -182,7 +200,7 @@ def _throttle_gemini():
         elapsed = now - _last_gemini_call
         if elapsed < MIN_CALL_INTERVAL:
             wait = MIN_CALL_INTERVAL - elapsed
-            print(f"🕐 Throttling Gemini call, waiting {wait:.1f}s...")
+            print(f"[WAIT] Throttling Gemini call, waiting {wait:.1f}s...")
             time.sleep(wait)
         _last_gemini_call = time.time()
 
@@ -218,25 +236,32 @@ def generate_with_gemini(prompt: str, system: str = None, stream: bool = False) 
                     wait_time = min(int(retry_after), 90)
                 else:
                     wait_time = min((2 ** attempt) * 10, 90)  # 10s, 20s, 40s, 80s, 90s
-                print(f"⏳ Rate limited (attempt {attempt+1}/{max_retries}), waiting {wait_time}s...")
+                print(f"[RATE] Rate limited (attempt {attempt+1}/{max_retries}), waiting {wait_time}s...")
                 time.sleep(wait_time)
                 continue
             
             if response.status_code != 200:
-                print(f"❌ Gemini API Error {response.status_code}: {response.text}")
-                raise HTTPException(status_code=500, detail=f"Gemini API error: {response.text}")
-            
+                print(f"[ERROR] Gemini API Error {response.status_code}: {response.text}")
+                raise RuntimeError(f"Gemini API error {response.status_code}: {response.text}")
+
             data = response.json()
-            return data['candidates'][0]['content']['parts'][0]['text']
-            
+            candidates = data.get('candidates', [])
+            if not candidates:
+                raise RuntimeError(f"Gemini returned no candidates (possible safety block): {data}")
+            content = candidates[0].get('content', {})
+            parts = content.get('parts', [])
+            if not parts:
+                raise RuntimeError(f"Gemini candidate has no parts: {candidates[0]}")
+            return parts[0]['text']
+
         except requests.exceptions.RequestException as e:
             print(f"Gemini API error: {e}")
             if attempt < max_retries - 1:
                 time.sleep(3)
                 continue
-            raise HTTPException(status_code=500, detail=f"Gemini processing failed: {str(e)}")
-    
-    raise HTTPException(status_code=429, detail="Gemini API rate limit exceeded. Please wait 1-2 minutes and try again.")
+            raise RuntimeError(f"Gemini processing failed: {str(e)}")
+
+    raise RuntimeError("Gemini API rate limit exceeded after all retries. Please wait 1-2 minutes and try again.")
 
 @app.post("/api/lectures")
 async def create_lecture(lecture: LectureCreate):
@@ -310,16 +335,16 @@ async def process_lecture(lecture_id: str):
         if not transcription:
             raise HTTPException(status_code=400, detail="No transcription to process")
         
-        print(f"🚀 Processing lecture {lecture_id}...")
+        print(f"[START] Processing lecture {lecture_id}...")
         start_time = time.time()
         
         # Chunk the transcription for faster processing
         chunks = chunk_text(transcription, max_chunk_size=600)
-        print(f"📊 Split into {len(chunks)} chunks for processing")
+        print(f"[INFO] Split into {len(chunks)} chunks for processing")
         
         from concurrent.futures import ThreadPoolExecutor
         
-        # ⚡ OPTIMIZED PROMPTS - SHORTER = FASTER
+        # OPTIMIZED PROMPTS - SHORTER = FASTER
         breakdown_prompt = f"""Break down by splitting words into syllables with hyphens. Keep sentences intact.
 
 Example: "Photosynthesis is the process" → "Pho-to-syn-the-sis is the pro-cess"
@@ -356,7 +381,7 @@ Text:
 
 Summary:"""
         
-        print("⚙️ Starting parallel processing of 4 outputs...")
+        print("[PROC] Starting parallel processing of 4 outputs...")
         
         # Use ThreadPoolExecutor for parallel processing (simpler, no asyncio issues)
         with ThreadPoolExecutor(max_workers=4) as executor:
@@ -388,7 +413,7 @@ Summary:"""
             summary = summary_future.result()
         
         elapsed_time = time.time() - start_time
-        print(f"✅ Processing complete in {elapsed_time:.1f} seconds!")
+        print(f"[DONE] Processing complete in {elapsed_time:.1f} seconds!")
         
         # Update Firestore
         update_data = {
@@ -415,7 +440,7 @@ Summary:"""
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Error processing lecture: {e}")
+        print(f"[ERROR] Error processing lecture: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.patch("/api/lectures/{lecture_id}")
@@ -480,10 +505,13 @@ async def transcribe_audio(file: UploadFile = File(...)):
         
         # Upload audio to AssemblyAI
         headers = {"authorization": api_key}
-        upload_response = requests.post(
-            "https://api.assemblyai.com/v2/upload",
-            headers=headers,
-            data=file_content
+        loop = asyncio.get_event_loop()
+        upload_response = await loop.run_in_executor(
+            None, lambda: requests.post(
+                "https://api.assemblyai.com/v2/upload",
+                headers=headers,
+                data=file_content
+            )
         )
         
         if upload_response.status_code != 200:
@@ -497,10 +525,12 @@ async def transcribe_audio(file: UploadFile = File(...)):
             "language_code": "en"
         }
         
-        transcript_response = requests.post(
-            "https://api.assemblyai.com/v2/transcript",
-            headers=headers,
-            json=transcript_request
+        transcript_response = await loop.run_in_executor(
+            None, lambda: requests.post(
+                "https://api.assemblyai.com/v2/transcript",
+                headers=headers,
+                json=transcript_request
+            )
         )
         
         if transcript_response.status_code != 200:
@@ -514,9 +544,11 @@ async def transcribe_audio(file: UploadFile = File(...)):
         attempt = 0
         
         while attempt < max_attempts:
-            polling_response = requests.get(polling_endpoint, headers=headers)
+            polling_response = await loop.run_in_executor(
+                None, lambda: requests.get(polling_endpoint, headers=headers)
+            )
             transcription_result = polling_response.json()
-            
+
             if transcription_result["status"] == "completed":
                 return {
                     "transcription": transcription_result["text"],
@@ -525,12 +557,12 @@ async def transcribe_audio(file: UploadFile = File(...)):
                 }
             elif transcription_result["status"] == "error":
                 raise HTTPException(
-                    status_code=500, 
+                    status_code=500,
                     detail=f"Transcription failed: {transcription_result.get('error', 'Unknown error')}"
                 )
-            
+
             # Wait before polling again
-            time.sleep(5)
+            await asyncio.sleep(5)
             attempt += 1
         
         raise HTTPException(status_code=408, detail="Transcription timeout. Please try again.")
@@ -592,9 +624,9 @@ async def analyze_handwriting(file: UploadFile = File(...), userId: str = "anony
             enhanced_bytes = buf.getvalue()
             base64_image = base64.b64encode(enhanced_bytes).decode('utf-8')
             mime_type = 'image/jpeg'
-            print(f"🖼️ Image enhanced: {img.size[0]}x{img.size[1]}, {len(enhanced_bytes)} bytes")
+            print(f"[IMG] Image enhanced: {img.size[0]}x{img.size[1]}, {len(enhanced_bytes)} bytes")
         except Exception as img_err:
-            print(f"⚠️ Image enhancement failed ({img_err}), using original")
+            print(f"[WARN] Image enhancement failed ({img_err}), using original")
             base64_image = base64.b64encode(file_content).decode('utf-8')
             mime_type = file.content_type or 'image/jpeg'
         
@@ -638,7 +670,7 @@ JSON format — output ONLY this, nothing else:
             ],
             "generationConfig": {
                 "temperature": 0.2,
-                "maxOutputTokens": 8192,
+                "maxOutputTokens": 2048,
                 "responseMimeType": "application/json"
             }
         }
@@ -651,11 +683,14 @@ JSON format — output ONLY this, nothing else:
             # Rebuild URL each attempt (key may have rotated)
             attempt_url = f"{GEMINI_API_BASE}/{GEMINI_VISION_MODEL}:generateContent?key={_get_gemini_key()}"
             try:
-                response = requests.post(attempt_url, headers=headers, json=payload, timeout=120)
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None, lambda: requests.post(attempt_url, headers=headers, json=payload, timeout=120)
+                )
             except requests.exceptions.RequestException as req_err:
-                print(f"⚠️ Request failed (attempt {attempt+1}): {req_err}")
+                print(f"[WARN] Request failed (attempt {attempt+1}): {req_err}")
                 if attempt < max_retries - 1:
-                    time.sleep(10)
+                    await asyncio.sleep(10)
                     continue
                 raise HTTPException(status_code=500, detail=f"Network error: {str(req_err)}")
             
@@ -668,8 +703,8 @@ JSON format — output ONLY this, nothing else:
                     wait_time = min(int(retry_after), 90)
                 else:
                     wait_time = min((2 ** attempt) * 10, 90)  # 10s, 20s, 40s, 80s, 90s
-                print(f"⏳ Vision rate limited (attempt {attempt+1}/{max_retries}), waiting {wait_time}s...")
-                time.sleep(wait_time)
+                print(f"[RATE] Vision rate limited (attempt {attempt+1}/{max_retries}), waiting {wait_time}s...")
+                await asyncio.sleep(wait_time)
                 continue
             
             if response.status_code != 200:
@@ -702,9 +737,9 @@ JSON format — output ONLY this, nothing else:
             else:
                 json_str = cleaned
             
-            print(f"📝 Parsing JSON response ({len(json_str)} chars)...")
+            print(f"[PARSE] Parsing JSON response ({len(json_str)} chars)...")
             result = json.loads(json_str)
-            print(f"✅ Parsed successfully. Score from AI: {result.get('score', 'N/A')}")
+            print(f"[OK] Parsed successfully. Score from AI: {result.get('score', 'N/A')}")
             
             # Use AI's category scores directly — do NOT override with defaults
             if "categoryScores" in result and isinstance(result["categoryScores"], dict):
@@ -716,8 +751,8 @@ JSON format — output ONLY this, nothing else:
                 }
                 computed_score = sum(cats.get(k, cats.get(k, 50)) * w for k, w in weights.items())
                 result["score"] = round(computed_score)
-                print(f"📊 Category scores: {cats}")
-                print(f"📊 Computed weighted score: {result['score']}")
+                print(f"[SCORE] Category scores: {cats}")
+                print(f"[SCORE] Computed weighted score: {result['score']}")
             
             # Only fill truly missing fields — do NOT overwrite AI-provided values
             result.setdefault("extractedText", "")
@@ -738,8 +773,8 @@ JSON format — output ONLY this, nothing else:
             result.setdefault("recommendations", [])
             
         except (json.JSONDecodeError, ValueError) as parse_err:
-            print(f"❌ JSON parse failed: {parse_err}")
-            print(f"❌ Raw response (first 500 chars): {result_text[:500]}")
+            print(f"[ERROR] JSON parse failed: {parse_err}")
+            print(f"[ERROR] Raw response (first 500 chars): {result_text[:500]}")
             
             # Try to repair truncated JSON
             try:
@@ -765,7 +800,7 @@ JSON format — output ONLY this, nothing else:
                     repaired += '}' * max(0, open_brackets)
                     
                     result = json.loads(repaired)
-                    print(f"✅ Recovered truncated JSON. Score: {result.get('score', 'N/A')}")
+                    print(f"[OK] Recovered truncated JSON. Score: {result.get('score', 'N/A')}")
                     result.setdefault("extractedText", "")
                     result.setdefault("summary", "Analysis complete (response was truncated).")
                     result.setdefault("categoryScores", {})
@@ -776,7 +811,7 @@ JSON format — output ONLY this, nothing else:
                 else:
                     raise ValueError("No JSON object found in response")
             except Exception as repair_err:
-                print(f"❌ JSON repair also failed: {repair_err}")
+                print(f"[ERROR] JSON repair also failed: {repair_err}")
                 # Extract what we can using regex
                 score_match = re.search(r'"score"\s*:\s*(\d+)', result_text)
                 text_match = re.search(r'"extractedText"\s*:\s*"([^"]*)', result_text)
@@ -801,7 +836,7 @@ JSON format — output ONLY this, nothing else:
                         {"title": "Try again", "description": "Upload a clearer photo with good lighting for more detailed analysis.", "priority": "medium"}
                     ]
                 }
-                print(f"⚠️ Regex fallback used. Score: {score_val}, Categories: {cats}")
+                print(f"[WARN] Regex fallback used. Score: {score_val}, Categories: {cats}")
         
         # Save to Firestore
         try:
@@ -821,6 +856,7 @@ JSON format — output ONLY this, nothing else:
         raise
     except Exception as e:
         print(f"Handwriting analysis error: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
@@ -828,7 +864,7 @@ JSON format — output ONLY this, nothing else:
 async def transform_content(request: ContentTransformRequest):
     """
     Transform educational content into multiple learning formats:
-    simplified notes, flashcards, quiz, mind map
+    NeuroLex notes, flashcards, quiz, mind map
     With fallback content if API calls fail
     """
     try:
@@ -836,14 +872,14 @@ async def transform_content(request: ContentTransformRequest):
         if not text.strip():
             raise HTTPException(status_code=400, detail="No text provided")
         
-        print(f"🔄 Transforming content ({len(text)} chars)...")
+        print(f"[TRANSFORM] Transforming content ({len(text)} chars)...")
         start_time = time.time()
         
         # Shortened text for fallback
         short_text = text[:200] if len(text) > 200 else text
         
         # Fallback content (simple, structured, no API needed)
-        fallback_notes = f"""SIMPLIFIED NOTES
+        fallback_notes = f"""NeuroLex NOTES
 
 Main Topic: {short_text[:80]}...
 
@@ -900,7 +936,7 @@ Rules:
 Text:
 {text}
 
-Simplified notes:"""
+NeuroLex notes:"""
         
         flashcard_prompt = f"""Create 8-10 flashcards to help a dyslexic student learn this content.
 
@@ -982,45 +1018,35 @@ Text:
 
 Mind Map:"""
         
-        # Try to generate each one, with fallback if it fails
-        simplified_notes = fallback_notes
+        # Generate all 4 in parallel
+        NeuroLex_notes = fallback_notes
         flashcards = fallback_flashcards
         quiz = fallback_quiz
         mind_map = fallback_mindmap
-        
-        try:
-            print("📝 Generating simplified notes...")
-            simplified_notes = generate_with_gemini(notes_prompt, "You are a patient dyslexia specialist teacher. Write detailed, easy-to-read notes. NO markdown symbols (no # or * or **). Use plain text with dashes for bullets. Be thorough — cover every key point.")
-            print("✅ Notes generated")
-        except Exception as e:
-            print(f"⚠️  Notes generation failed, using fallback: {e}")
-        
-        try:
-            print("🎓 Generating flashcards...")
-            flashcards = generate_with_gemini(flashcard_prompt, "Create flashcards using ONLY Q: and A: format. No numbering, no extra text. Keep answers clear and simple.")
-            print("✅ Flashcards generated")
-        except Exception as e:
-            print(f"⚠️  Flashcards generation failed, using fallback: {e}")
-        
-        try:
-            print("📋 Generating quiz...")
-            quiz = generate_with_gemini(quiz_prompt, "Create a multiple choice quiz. Use simple language. Mark correct answer with (correct). Format exactly as shown.")
-            print("✅ Quiz generated")
-        except Exception as e:
-            print(f"⚠️  Quiz generation failed, using fallback: {e}")
-        
-        try:
-            print("🗺️  Generating mind map...")
-            mind_map = generate_with_gemini(mindmap_prompt, "Create a detailed text mind map using tree characters (├─ │ └─). Use simple words. Be thorough.")
-            print("✅ Mind map generated")
-        except Exception as e:
-            print(f"⚠️  Mind map generation failed, using fallback: {e}")
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            nf = executor.submit(generate_with_gemini, notes_prompt,     "You are a patient dyslexia specialist teacher. Write detailed, easy-to-read notes. NO markdown symbols (no # or * or **). Use plain text with dashes for bullets. Be thorough -- cover every key point.")
+            ff = executor.submit(generate_with_gemini, flashcard_prompt, "Create flashcards using ONLY Q: and A: format. No numbering, no extra text. Keep answers clear and simple.")
+            qf = executor.submit(generate_with_gemini, quiz_prompt,      "Create a multiple choice quiz. Use simple language. Mark correct answer with (correct). Format exactly as shown.")
+            mf = executor.submit(generate_with_gemini, mindmap_prompt,   "Create a detailed text mind map using tree characters (├─ │ └─). Use simple words. Be thorough.")
+
+            for label, future in [("notes", nf), ("flashcards", ff), ("quiz", qf), ("mindmap", mf)]:
+                try:
+                    result = future.result()
+                    if label == "notes":        NeuroLex_notes = result
+                    elif label == "flashcards": flashcards = result
+                    elif label == "quiz":       quiz = result
+                    elif label == "mindmap":    mind_map = result
+                    print(f"[OK] {label} generated")
+                except Exception as e:
+                    print(f"[WARN] {label} generation failed, using fallback: {e}")
+                    traceback.print_exc()
         
         elapsed = time.time() - start_time
-        print(f"✅ Content transformation complete in {elapsed:.1f}s")
+        print(f"[DONE] Content transformation complete in {elapsed:.1f}s")
         
         return {
-            "simplifiedNotes": simplified_notes,
+            "NeuroLexNotes": NeuroLex_notes,
             "flashcards": flashcards,
             "quiz": quiz,
             "mindMap": mind_map,
@@ -1030,7 +1056,8 @@ Mind Map:"""
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Content transformation error: {e}")
+        print(f"[ERROR] Content transformation failed: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Transformation failed: {str(e)}")
 
 
@@ -1049,13 +1076,16 @@ Provide specific, actionable recommendations. Format as a JSON array:
   {{"title": "...", "description": "...", "priority": "high|medium|low"}}
 ]"""
         
-        result = generate_with_gemini(prompt, "You are an educational psychologist specializing in dyslexia. Provide practical learning recommendations. Respond with valid JSON only.")
-        
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None, lambda: generate_with_gemini(prompt, "You are an educational psychologist specializing in dyslexia. Provide practical learning recommendations. Respond with valid JSON only.")
+        )
+
         try:
             json_start = result.find('[')
             json_end = result.rfind(']') + 1
             recommendations = json.loads(result[json_start:json_end])
-        except:
+        except (json.JSONDecodeError, ValueError, TypeError):
             recommendations = [
                 {"title": "Practice daily reading", "description": "Spend 15-20 minutes reading with the Reading Assistant.", "priority": "high"},
                 {"title": "Review weak areas", "description": "Focus on topics where quiz scores are lowest.", "priority": "medium"},
@@ -1069,5 +1099,7 @@ Provide specific, actionable recommendations. Format as a JSON array:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
+
+
 

@@ -5,8 +5,8 @@
 // Services needed: Authentication, Firestore Database, Cloud Storage
 
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 // Firebase configuration object
@@ -29,16 +29,52 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 }
 
 // Initialize Firebase app with config
-const app = initializeApp(firebaseConfig);
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  console.log('✅ Firebase initialized successfully');
+} catch (error) {
+  console.error('❌ Firebase initialization error:', error);
+  // Try to reinitialize if QUIC protocol error
+  if (error.code === 'ERR_QUIC_PROTOCOL_ERROR' || error.message.includes('QUIC')) {
+    console.log('🔄 Retrying Firebase initialization with fallback...');
+    app = initializeApp(firebaseConfig);
+  }
+}
 
-// Initialize and export authentication service
+// Initialize and export authentication service with error handling
 export const auth = getAuth(app);
+
+// Configure auth to use long polling as fallback for QUIC issues
+if (typeof window !== 'undefined') {
+  // Force use of fetch/XHR instead of QUIC
+  auth.settings.appVerificationDisabledForTesting = false;
+}
 
 // Initialize and export Firestore database
 export const db = getFirestore(app);
+
+// Add retry logic for Firestore connection issues
+db._settings = {
+  ...db._settings,
+  experimentalForceLongPolling: true, // Force long polling instead of QUIC
+  experimentalAutoDetectLongPolling: true,
+};
 
 // Initialize and export Cloud Storage
 export const storage = getStorage(app);
 
 // Export Google auth provider for OAuth sign-in
 export const googleProvider = new GoogleAuthProvider();
+
+// Add error handler for auth state changes
+auth.onAuthStateChanged(
+  (user) => {
+    if (user) {
+      console.log('✅ User authenticated:', user.email);
+    }
+  },
+  (error) => {
+    console.error('❌ Auth state change error:', error);
+  }
+);

@@ -1,4 +1,4 @@
-// Signup page for SimplifiED
+﻿// Signup page for NeuroLex
 // Full page with same theme as the app
 
 import React, { useState } from 'react';
@@ -185,7 +185,7 @@ export default function Signup() {
                 }`}
               >
                 <BookOpen className="w-10 h-10 text-blue-400" />
-                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">SimplifiED</span>
+                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">NeuroLex</span>
               </motion.div>
             </Link>
             <motion.h2 
@@ -206,7 +206,7 @@ export default function Signup() {
                 isDark ? 'text-gray-300' : 'text-gray-600'
               }`}
             >
-              Join SimplifiED to start your learning journey
+              Join NeuroLex to start your learning journey
             </motion.p>
           </motion.div>
 

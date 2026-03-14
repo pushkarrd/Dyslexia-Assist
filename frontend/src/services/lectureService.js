@@ -1,4 +1,4 @@
-// Firestore service for managing lecture recordings
+﻿// Firestore service for managing lecture recordings
 // Handles CRUD operations for lecture transcriptions and processed data
 // Collection: lectures
 // Document structure: {
@@ -113,7 +113,7 @@ export async function getLatestLecture(userId) {
  * Update processed data for a lecture
  * @param {string} lectureId - Document ID
  * @param {Object} processedData - Processed text data
- * @param {string} processedData.simpleText - Simplified text
+ * @param {string} processedData.simpleText - NeuroLex text
  * @param {string} processedData.detailedSteps - Detailed steps
  * @param {string} processedData.mindMap - Mind map text
  * @param {string} processedData.summary - Summary text

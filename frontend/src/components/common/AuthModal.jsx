@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
@@ -85,7 +85,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           <div className="inline-block mb-4">
             <div className="text-4xl font-black text-white flex items-center justify-center gap-2">
               <span>📚</span>
-              <span className="bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">SimplifiED</span>
+              <span className="bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">NeuroLex</span>
             </div>
           </div>
           <h2 className="text-2xl font-bold text-white mb-1">
@@ -93,7 +93,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           </h2>
           <p className="text-gray-300 text-sm">
             {isSignUp 
-              ? 'Join SimplifiED to start detecting deepfakes' 
+              ? 'Join NeuroLex to start detecting deepfakes' 
               : 'Sign in to your account'}
           </p>
         </div>

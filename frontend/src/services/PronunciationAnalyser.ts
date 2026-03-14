@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PronunciationAnalyser — Compares spoken words against target words,
  * scores pronunciation, and classifies dyslexia-specific error types.
  */
@@ -361,7 +361,7 @@ class PronunciationAnalyser {
             accuracy: totalWords > 0 ? correctCount / totalWords : 1,
             errorTypeCounts,
             mostStruggledWords: wordStats.slice(0, 10),
-            mostStruggledPhonemes: [], // simplified — phoneme-level not tracked individually
+            mostStruggledPhonemes: [], // NeuroLex — phoneme-level not tracked individually
             wordsToWatch,
         };
     }

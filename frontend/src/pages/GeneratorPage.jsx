@@ -1,5 +1,5 @@
-// Multi-Modal Learning Content Generator
-// Input: text or PDF → Output: simplified notes, flashcards, quiz, mind map, audio
+﻿// Multi-Modal Learning Content Generator
+// Input: text or PDF → Output: NeuroLex notes, flashcards, quiz, mind map, audio
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,7 +40,7 @@ import { WordRegistryManager } from '../utils/WordRegistry';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 const TABS = [
-    { id: 'notes', label: 'Simplified Notes', icon: FileText },
+    { id: 'notes', label: 'NeuroLex Notes', icon: FileText },
     { id: 'flashcards', label: 'Flashcards', icon: Layers },
     { id: 'quiz', label: 'Quiz', icon: HelpCircle },
     { id: 'mindmap', label: 'Mind Map', icon: Brain },
@@ -171,7 +171,7 @@ function GeneratorPageInner() {
                                 <div>
                                     <h2 className="text-lg font-semibold mb-1">Transform Any Content</h2>
                                     <p className="text-white/60 text-sm">
-                                        Paste text or upload a PDF, and AI will generate simplified notes,
+                                        Paste text or upload a PDF, and AI will generate NeuroLex notes,
                                         flashcards, quizzes, mind maps, and audio narration.
                                     </p>
                                 </div>
@@ -283,11 +283,11 @@ function GeneratorPageInner() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                             >
-                                {activeTab === 'notes' && <NotesViewGaze content={outputs.simplifiedNotes} />}
+                                {activeTab === 'notes' && <NotesViewGaze content={outputs.NeuroLexNotes} />}
                                 {activeTab === 'flashcards' && <FlashcardView cards={outputs.flashcards} />}
                                 {activeTab === 'quiz' && <QuizView questions={outputs.quiz} userId={user?.uid} />}
                                 {activeTab === 'mindmap' && <MindMapView data={outputs.mindMap} />}
-                                {activeTab === 'audio' && <AudioView text={outputs.simplifiedNotes} />}
+                                {activeTab === 'audio' && <AudioView text={outputs.NeuroLexNotes} />}
                             </motion.div>
                         </AnimatePresence>
                     </motion.div>
@@ -380,7 +380,7 @@ function NotesView({ content }) {
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                     <FileText size={20} className="text-amber-400" />
-                    Simplified Notes
+                    NeuroLex Notes
                 </h3>
                 <button
                     onClick={() => setSyllableMode(!syllableMode)}
@@ -607,7 +607,7 @@ function NotesViewGaze({ content }) {
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                     <FileText size={20} className="text-amber-400" />
-                    Simplified Notes
+                    NeuroLex Notes
                 </h3>
                 <div className="flex items-center gap-2">
                     <button
