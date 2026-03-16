@@ -14,6 +14,7 @@ __pycache__/
 # Firebase credentials
 serviceAccountKey.json
 **/serviceAccountKey.json
+backend-python/serviceAccountKey.json
 
 # Build outputs
 dist/
