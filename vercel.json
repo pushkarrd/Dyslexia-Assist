@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "installCommand": "cd frontend-next && npm ci",
+  "buildCommand": "cd frontend-next && npm run build",
+  "devCommand": "cd frontend-next && npm run dev"
+}
