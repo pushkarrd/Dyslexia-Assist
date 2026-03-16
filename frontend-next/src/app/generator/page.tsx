@@ -32,13 +32,12 @@ import {
     recordAdaptiveLevel, endGazeSession, getCurrentSessionSnapshot,
     recordWordRead, recordWordStruggle, recordFusionStats,
 } from '@/services/gazeAnalytics';
-import { getApiBaseUrl } from '@/lib/api';
 // Lip sync + fusion
 import LipSyncEngine from '@/services/LipSyncEngine';
 import FusionEngine from '@/services/FusionEngine';
 import { WordRegistryManager } from '@/utils/WordRegistry';
 
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = '/api';
 
 const TABS = [
     { id: 'notes', label: 'NeuroLex Notes', icon: FileText },
@@ -250,11 +249,10 @@ function GeneratorPageInner() {
                                 }}
                                 rows={10}
                                 placeholder="Paste lecture notes, textbook content, or any educational text..."
-                                className={`w-full rounded-xl p-4 bg-white/10 backdrop-blur-md border text-foreground placeholder-foreground/30 focus:outline-none resize-none transition-colors ${
-                                    textError
+                                className={`w-full rounded-xl p-4 bg-white/10 backdrop-blur-md border text-foreground placeholder-foreground/30 focus:outline-none resize-none transition-colors ${textError
                                         ? 'border-red-500/70 focus:border-red-500'
                                         : 'border-white/10 focus:border-amber-500'
-                                }`}
+                                    }`}
                                 style={{ fontSize: '16px', lineHeight: '1.6' }}
                             />
                             {textError && (
