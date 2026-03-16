@@ -97,26 +97,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Firebase Admin SDK
+# Initialize Firebase Admin SDK (graceful fallback)
+# If Firebase credentials are missing in deployment env, keep API running and
+# skip Firestore writes instead of crashing the whole service.
 firebase_service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
 firebase_service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "serviceAccountKey.json").strip()
+db = None
 
-if firebase_service_account_json:
-    try:
-        service_account_info = json.loads(firebase_service_account_json)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError("Invalid FIREBASE_SERVICE_ACCOUNT_JSON. Must be valid JSON.") from exc
-    cred = credentials.Certificate(service_account_info)
-else:
-    if not os.path.exists(firebase_service_account_path):
-        raise RuntimeError(
-            "Firebase credentials not found. Set FIREBASE_SERVICE_ACCOUNT_JSON or "
-            "FIREBASE_SERVICE_ACCOUNT_PATH."
-        )
-    cred = credentials.Certificate(firebase_service_account_path)
+try:
+    if firebase_service_account_json:
+        try:
+            service_account_info = json.loads(firebase_service_account_json)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("Invalid FIREBASE_SERVICE_ACCOUNT_JSON. Must be valid JSON.") from exc
+        cred = credentials.Certificate(service_account_info)
+    elif os.path.exists(firebase_service_account_path):
+        cred = credentials.Certificate(firebase_service_account_path)
+    else:
+        cred = None
 
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+    if cred is not None:
+        if not firebase_admin._apps:
+            firebase_admin.initialize_app(cred)
+        db = firestore.client()
+        print("[OK] Firebase initialized")
+    else:
+        print("[WARNING] Firebase credentials not found. Continuing without Firestore logging.")
+except Exception as firebase_err:
+    db = None
+    print(f"[WARNING] Firebase init failed: {firebase_err}. Continuing without Firestore logging.")
 
 # Register assessment screening router
 app.include_router(assessment_router.router)
