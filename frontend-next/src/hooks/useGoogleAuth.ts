@@ -2,12 +2,13 @@
 
 import { useCallback } from "react";
 import {
+  signInWithPopup,
   signInWithCredential,
   GoogleAuthProvider,
   setPersistence,
   browserLocalPersistence,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, googleProvider } from "@/lib/firebase";
 
 /**
  * Loads Google Identity Services script from Google's CDN.
@@ -37,16 +38,35 @@ function loadGIS(): Promise<void> {
 
 export function useGoogleAuth() {
   const signInWithGoogle = useCallback(async (): Promise<void> => {
+    await setPersistence(auth, browserLocalPersistence);
+
+    // Primary path: Firebase popup flow. This avoids custom OAuth client misconfig issues
+    // and only requires Firebase Auth Google provider + authorized domain setup.
+    try {
+      await signInWithPopup(auth, googleProvider);
+      return;
+    } catch (popupErr: any) {
+      const popupCode = popupErr?.code || "";
+
+      // If popup is blocked/closed or operation cancelled, stop early with readable errors.
+      if (
+        popupCode === "auth/popup-blocked" ||
+        popupCode === "auth/popup-closed-by-user" ||
+        popupCode === "auth/cancelled-popup-request"
+      ) {
+        throw new Error(popupErr?.message || "Google sign-in popup was blocked or closed.");
+      }
+      // Otherwise continue to GIS fallback below.
+    }
+
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!clientId) {
       throw new Error(
-        "NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set in .env.local — " +
-        "get it from Firebase Console → Authentication → Sign-in method → Google → Web client ID"
+        "Google sign-in failed via Firebase popup and NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing for fallback."
       );
     }
 
     await loadGIS();
-    await setPersistence(auth, browserLocalPersistence);
 
     return new Promise<void>((resolve, reject) => {
       const google = (window as any).google;
