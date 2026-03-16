@@ -1,0 +1,552 @@
+@import url('https://fonts.cdnfonts.com/css/opendyslexic');
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-violet: #7C3AED;
+  --color-violet-light: #A78BFA;
+  --color-cyan: #06B6D4;
+  --color-emerald: #10B981;
+  --color-amber: #F59E0B;
+  --color-amber-warm: #D97706;
+  --color-cream: #FFF9F0;
+}
+
+/* ─── Dyslexia-Optimized Light Theme (Warm & Calming) ─── */
+:root {
+  --background: #FFF9F0;
+  --foreground: #0F172A;
+  --card: #FFFDF7;
+  --card-foreground: #0F172A;
+  --popover: #FFFDF7;
+  --popover-foreground: #0F172A;
+  --primary: #7C3AED;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F0FF;
+  --secondary-foreground: #0F172A;
+  --muted: #F7F3EE;
+  --muted-foreground: #475569;
+  --accent: #FEF3C7;
+  --accent-foreground: #0F172A;
+  --destructive: #EF4444;
+  --border: #E8DFD0;
+  --input: #E8DFD0;
+  --ring: #7C3AED;
+  --chart-1: #7C3AED;
+  --chart-2: #06B6D4;
+  --chart-3: #10B981;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+  --radius: 0.75rem;
+  --sidebar: #FFF9F0;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #7C3AED;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5F0FF;
+  --sidebar-accent-foreground: #0F172A;
+  --sidebar-border: #E8DFD0;
+  --sidebar-ring: #7C3AED;
+
+  /* Accessibility CSS variables */
+  --a11y-font-size: 18px;
+  --a11y-letter-spacing: 0px;
+  --a11y-word-spacing: 0px;
+  --a11y-line-height: 1.6;
+}
+
+/* ─── Dyslexia-Optimized Dark Theme ─── */
+.dark {
+  --background: #0a0a0f;
+  --foreground: #E2E8F0;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-foreground: #E2E8F0;
+  --popover: #12121a;
+  --popover-foreground: #E2E8F0;
+  --primary: #A78BFA;
+  --primary-foreground: #0a0a0f;
+  --secondary: #1e1e2e;
+  --secondary-foreground: #E2E8F0;
+  --muted: #1e1e2e;
+  --muted-foreground: #94A3B8;
+  --accent: #292524;
+  --accent-foreground: #E2E8F0;
+  --destructive: #EF4444;
+  --border: rgba(167, 139, 250, 0.12);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #A78BFA;
+  --chart-1: #A78BFA;
+  --chart-2: #06B6D4;
+  --chart-3: #10B981;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+  --sidebar: #12121a;
+  --sidebar-foreground: #E2E8F0;
+  --sidebar-primary: #A78BFA;
+  --sidebar-primary-foreground: #0a0a0f;
+  --sidebar-accent: #1e1e2e;
+  --sidebar-accent-foreground: #E2E8F0;
+  --sidebar-border: rgba(167, 139, 250, 0.12);
+  --sidebar-ring: #A78BFA;
+}
+
+/* ─── Base Styles ─── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-optical-sizing: auto;
+    font-style: normal;
+    transition: font-family 0.3s ease, filter 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+/* ─── Dyslexia Accessibility Modes ─── */
+
+/* ─── Light Mode Contrast Fixes ─── */
+/* Override alpha-white backgrounds that are invisible on light bg */
+/* Also add backdrop-blur so text cards get a frosted glass effect over alphabet rain */
+:root main .bg-white\/5 {
+  background-color: rgba(255, 249, 240, 0.65) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+:root main .bg-white\/8 {
+  background-color: rgba(255, 249, 240, 0.7) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+:root main .bg-white\/10 {
+  background-color: rgba(255, 249, 240, 0.75) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+:root main .bg-white\/15 {
+  background-color: rgba(255, 249, 240, 0.8) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+:root main .bg-white\/20 {
+  background-color: rgba(255, 249, 240, 0.85) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+:root main .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+:root main .border-white\/12 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+:root main .border-white\/15 {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+:root main .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+:root main .border-white\/22 {
+  border-color: rgba(0, 0, 0, 0.18) !important;
+}
+:root main .border-white\/25 {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+/* Override white text to dark in light mode */
+:root main .text-white {
+  color: #0F172A !important;
+}
+:root main .text-white\/90 {
+  color: rgba(15, 23, 42, 0.9) !important;
+}
+:root main .text-white\/80 {
+  color: rgba(15, 23, 42, 0.8) !important;
+}
+:root main .text-white\/70 {
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+:root main .text-white\/60 {
+  color: rgba(15, 23, 42, 0.65) !important;
+}
+:root main .text-white\/50 {
+  color: rgba(15, 23, 42, 0.55) !important;
+}
+:root main .text-white\/40 {
+  color: rgba(15, 23, 42, 0.5) !important;
+}
+:root main .text-white\/30 {
+  color: rgba(15, 23, 42, 0.4) !important;
+}
+:root main .text-white\/20 {
+  color: rgba(15, 23, 42, 0.3) !important;
+}
+:root main .placeholder-white\/30::placeholder {
+  color: rgba(15, 23, 42, 0.35) !important;
+}
+/* Override black/30 header bg in light mode */
+:root main .bg-black\/30 {
+  background-color: rgba(255, 249, 240, 0.85) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ─── Dark Mode Card Blur ─── */
+/* Add backdrop-blur to card containers in dark mode for readability over alphabet rain */
+.dark main .bg-white\/5,
+.dark main .bg-white\/8,
+.dark main .bg-white\/10,
+.dark main .bg-white\/15,
+.dark main .bg-white\/20 {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.dark main .bg-black\/20 {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ─── Gradient Card Blur (both themes) ─── */
+/* Info banners and cards with gradient backgrounds also need blur for text readability */
+main [class*="bg-gradient-to"][class*="rounded"] {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+/* Light mode: ensure gradient cards have a warm semi-transparent base */
+:root main [class*="bg-gradient-to"][class*="rounded"][class*="/10"],
+:root main [class*="bg-gradient-to"][class*="rounded"][class*="/20"] {
+  background-color: rgba(255, 249, 240, 0.5);
+}
+
+/* ─── Content Card: blur box behind text sections ─── */
+/* Use .content-blur-card on page content wrappers so text is readable over alphabet rain */
+.content-blur-card {
+  border-radius: 1.25rem;
+  position: relative;
+}
+:root .content-blur-card {
+  background: rgba(255, 249, 240, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(200, 185, 160, 0.35);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+.dark .content-blur-card {
+  background: rgba(10, 10, 20, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(167, 139, 250, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Accessibility Font Color ─── */
+/* Applied via body.a11y-font-color — applies to all text globally */
+body.a11y-font-color main p,
+body.a11y-font-color main span,
+body.a11y-font-color main li,
+body.a11y-font-color main td,
+body.a11y-font-color main th,
+body.a11y-font-color main label,
+body.a11y-font-color main h1,
+body.a11y-font-color main h2,
+body.a11y-font-color main h3,
+body.a11y-font-color main h4,
+body.a11y-font-color main h5,
+body.a11y-font-color main h6,
+body.a11y-font-color main blockquote,
+body.a11y-font-color main textarea {
+  color: var(--a11y-font-color) !important;
+}
+/* Exclude home page from font color override */
+body.a11y-font-color .home-page * {
+  color: unset !important;
+}
+
+body.dyslexic-mode {
+  font-family: 'OpenDyslexic', sans-serif !important;
+}
+
+body.high-contrast {
+  filter: contrast(1.4);
+}
+
+body.focus-mode .focus-dimmable {
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+body.focus-mode .focus-dimmable:hover,
+body.focus-mode .focus-dimmable:focus-within {
+  opacity: 1;
+}
+
+body.focus-mode .reading-content {
+  position: relative;
+}
+
+body.focus-mode .reading-content span {
+  opacity: 0.25;
+  transition: opacity 0.2s ease;
+}
+
+body.focus-mode .reading-content span:hover,
+body.focus-mode .reading-content span.focus-active {
+  opacity: 1;
+}
+
+body.focus-mode nav,
+body.focus-mode .sticky,
+body.focus-mode footer {
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+body.focus-mode nav:hover,
+body.focus-mode .sticky:hover {
+  opacity: 1;
+}
+
+body.focus-mode::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  box-shadow: inset 0 0 200px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ─── Reading Content (respects accessibility settings) ─── */
+.reading-content {
+  font-size: var(--a11y-font-size);
+  letter-spacing: var(--a11y-letter-spacing);
+  word-spacing: var(--a11y-word-spacing);
+  line-height: var(--a11y-line-height);
+  max-width: 65ch;
+  transition: all 0.3s ease;
+}
+
+/* ─── Global Accessibility: apply spacing/line-height to ALL text ─── */
+body p,
+body span:not(.lucide):not([class*="icon"]),
+body li,
+body td,
+body th,
+body textarea,
+body label,
+body blockquote {
+  letter-spacing: var(--a11y-letter-spacing);
+  word-spacing: var(--a11y-word-spacing);
+  line-height: var(--a11y-line-height);
+  transition: letter-spacing 0.3s ease, word-spacing 0.3s ease, line-height 0.3s ease;
+}
+
+/* Scale font-size globally via html so Tailwind text-* classes scale proportionally */
+html[style*="--a11y-font-size"] body {
+  font-size: var(--a11y-font-size);
+}
+
+/* ─── Reading Ruler ─── */
+.reading-ruler {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 9980;
+  border-top: 2px solid rgba(124, 58, 237, 0.5);
+  border-bottom: 2px solid rgba(124, 58, 237, 0.5);
+  background: rgba(124, 58, 237, 0.08);
+  will-change: transform;
+}
+
+/* ─── Touch-Friendly Targets ─── */
+button,
+a,
+[role="button"] {
+  min-height: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+input,
+textarea,
+select {
+  min-height: 48px;
+  font-size: 16px;
+  padding: 0.75rem;
+}
+
+/* ─── Mobile Optimizations ─── */
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+  }
+
+  .touch-target {
+    min-height: 56px;
+    min-width: 56px;
+  }
+}
+
+/* ─── StarBorder Animations ─── */
+@keyframes star-movement-bottom {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-100%, 0%);
+    opacity: 0;
+  }
+}
+
+@keyframes star-movement-top {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(100%, 0%);
+    opacity: 0;
+  }
+}
+
+.animate-star-movement-bottom {
+  animation: star-movement-bottom linear infinite alternate;
+}
+
+.animate-star-movement-top {
+  animation: star-movement-top linear infinite alternate;
+}
+
+/* ─── Aurora Background Animation ─── */
+@keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.aurora-bg {
+  background: linear-gradient(-45deg,
+      #7C3AED20, #06B6D420, #A78BFA20, #10B98120);
+  background-size: 400% 400%;
+  animation: aurora 15s ease infinite;
+}
+
+/* ─── Glassmorphism Utilities ─── */
+.glass {
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+}
+
+:root .glass {
+  background: rgba(255, 249, 240, 0.96);
+  border: 1px solid rgba(200, 185, 160, 0.5);
+}
+
+.dark .glass {
+  background: rgba(10, 10, 15, 0.92);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+}
+
+.glass-card {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 1rem;
+}
+
+:root .glass-card {
+  background: rgba(255, 253, 247, 0.92);
+  border: 1px solid rgba(200, 185, 160, 0.4);
+}
+
+.dark .glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(167, 139, 250, 0.12);
+}
+
+/* ─── Gradient Text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, #7C3AED, #A78BFA, #F59E0B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Dot Pattern Background ─── */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgba(124, 58, 237, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ─── Grid Pattern Background ─── */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

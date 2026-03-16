@@ -1,0 +1,878 @@
+/**
+ * @fileoverview CMU Pronouncing Dictionary subset — ~500 most common English words.
+ *
+ * Format: { "word": ["PHONEME1", "PHONEME2", ...] }
+ * Uses ARPAbet notation with stress markers on vowels (0 = no stress, 1 = primary, 2 = secondary).
+ *
+ * Lazy-loaded by LipSyncEngine — not imported at page load.
+ */
+
+const CMU_DICT = {
+    // ---- A ----
+    "a": ["AH0"],
+    "able": ["EY1", "B", "AH0", "L"],
+    "about": ["AH0", "B", "AW1", "T"],
+    "above": ["AH0", "B", "AH1", "V"],
+    "across": ["AH0", "K", "R", "AO1", "S"],
+    "act": ["AE1", "K", "T"],
+    "add": ["AE1", "D"],
+    "after": ["AE1", "F", "T", "ER0"],
+    "again": ["AH0", "G", "EH1", "N"],
+    "against": ["AH0", "G", "EH1", "N", "S", "T"],
+    "age": ["EY1", "JH"],
+    "ago": ["AH0", "G", "OW1"],
+    "air": ["EH1", "R"],
+    "all": ["AO1", "L"],
+    "almost": ["AO1", "L", "M", "OW2", "S", "T"],
+    "along": ["AH0", "L", "AO1", "NG"],
+    "already": ["AO0", "L", "R", "EH1", "D", "IY0"],
+    "also": ["AO1", "L", "S", "OW0"],
+    "always": ["AO1", "L", "W", "EY2", "Z"],
+    "am": ["AE1", "M"],
+    "among": ["AH0", "M", "AH1", "NG"],
+    "an": ["AE1", "N"],
+    "and": ["AE1", "N", "D"],
+    "animal": ["AE1", "N", "AH0", "M", "AH0", "L"],
+    "another": ["AH0", "N", "AH1", "DH", "ER0"],
+    "answer": ["AE1", "N", "S", "ER0"],
+    "any": ["EH1", "N", "IY0"],
+    "apple": ["AE1", "P", "AH0", "L"],
+    "are": ["AA1", "R"],
+    "area": ["EH1", "R", "IY0", "AH0"],
+    "arm": ["AA1", "R", "M"],
+    "around": ["ER0", "AW1", "N", "D"],
+    "as": ["AE1", "Z"],
+    "ask": ["AE1", "S", "K"],
+    "at": ["AE1", "T"],
+    "away": ["AH0", "W", "EY1"],
+    // ---- B ----
+    "back": ["B", "AE1", "K"],
+    "bad": ["B", "AE1", "D"],
+    "ball": ["B", "AO1", "L"],
+    "bat": ["B", "AE1", "T"],
+    "be": ["B", "IY1"],
+    "bear": ["B", "EH1", "R"],
+    "beautiful": ["B", "Y", "UW1", "T", "AH0", "F", "AH0", "L"],
+    "because": ["B", "IH0", "K", "AO1", "Z"],
+    "become": ["B", "IH0", "K", "AH1", "M"],
+    "bed": ["B", "EH1", "D"],
+    "been": ["B", "IH1", "N"],
+    "before": ["B", "IH0", "F", "AO1", "R"],
+    "began": ["B", "IH0", "G", "AE1", "N"],
+    "begin": ["B", "IH0", "G", "IH1", "N"],
+    "being": ["B", "IY1", "IH0", "NG"],
+    "believe": ["B", "IH0", "L", "IY1", "V"],
+    "below": ["B", "IH0", "L", "OW1"],
+    "best": ["B", "EH1", "S", "T"],
+    "better": ["B", "EH1", "T", "ER0"],
+    "between": ["B", "IH0", "T", "W", "IY1", "N"],
+    "big": ["B", "IH1", "G"],
+    "bird": ["B", "ER1", "D"],
+    "black": ["B", "L", "AE1", "K"],
+    "blood": ["B", "L", "AH1", "D"],
+    "blue": ["B", "L", "UW1"],
+    "board": ["B", "AO1", "R", "D"],
+    "boat": ["B", "OW1", "T"],
+    "body": ["B", "AA1", "D", "IY0"],
+    "bone": ["B", "OW1", "N"],
+    "book": ["B", "UH1", "K"],
+    "both": ["B", "OW1", "TH"],
+    "bottom": ["B", "AA1", "T", "AH0", "M"],
+    "box": ["B", "AA1", "K", "S"],
+    "boy": ["B", "OY1"],
+    "bread": ["B", "R", "EH1", "D"],
+    "break": ["B", "R", "EY1", "K"],
+    "bring": ["B", "R", "IH1", "NG"],
+    "brother": ["B", "R", "AH1", "DH", "ER0"],
+    "brown": ["B", "R", "AW1", "N"],
+    "build": ["B", "IH1", "L", "D"],
+    "bump": ["B", "AH1", "M", "P"],
+    "burn": ["B", "ER1", "N"],
+    "bus": ["B", "AH1", "S"],
+    "but": ["B", "AH1", "T"],
+    "buy": ["B", "AY1"],
+    "by": ["B", "AY1"],
+    // ---- C ----
+    "call": ["K", "AO1", "L"],
+    "came": ["K", "EY1", "M"],
+    "can": ["K", "AE1", "N"],
+    "car": ["K", "AA1", "R"],
+    "care": ["K", "EH1", "R"],
+    "carry": ["K", "AE1", "R", "IY0"],
+    "cat": ["K", "AE1", "T"],
+    "catch": ["K", "AE1", "CH"],
+    "cause": ["K", "AO1", "Z"],
+    "center": ["S", "EH1", "N", "T", "ER0"],
+    "certain": ["S", "ER1", "T", "AH0", "N"],
+    "chair": ["CH", "EH1", "R"],
+    "chance": ["CH", "AE1", "N", "S"],
+    "change": ["CH", "EY1", "N", "JH"],
+    "chapter": ["CH", "AE1", "P", "T", "ER0"],
+    "check": ["CH", "EH1", "K"],
+    "child": ["CH", "AY1", "L", "D"],
+    "children": ["CH", "IH1", "L", "D", "R", "AH0", "N"],
+    "church": ["CH", "ER1", "CH"],
+    "circle": ["S", "ER1", "K", "AH0", "L"],
+    "city": ["S", "IH1", "T", "IY0"],
+    "class": ["K", "L", "AE1", "S"],
+    "clean": ["K", "L", "IY1", "N"],
+    "clear": ["K", "L", "IH1", "R"],
+    "close": ["K", "L", "OW1", "Z"],
+    "cold": ["K", "OW1", "L", "D"],
+    "color": ["K", "AH1", "L", "ER0"],
+    "come": ["K", "AH1", "M"],
+    "common": ["K", "AA1", "M", "AH0", "N"],
+    "complete": ["K", "AH0", "M", "P", "L", "IY1", "T"],
+    "consider": ["K", "AH0", "N", "S", "IH1", "D", "ER0"],
+    "contain": ["K", "AH0", "N", "T", "EY1", "N"],
+    "continue": ["K", "AH0", "N", "T", "IH1", "N", "Y", "UW0"],
+    "control": ["K", "AH0", "N", "T", "R", "OW1", "L"],
+    "cook": ["K", "UH1", "K"],
+    "cool": ["K", "UW1", "L"],
+    "copy": ["K", "AA1", "P", "IY0"],
+    "corner": ["K", "AO1", "R", "N", "ER0"],
+    "cost": ["K", "AO1", "S", "T"],
+    "could": ["K", "UH1", "D"],
+    "country": ["K", "AH1", "N", "T", "R", "IY0"],
+    "course": ["K", "AO1", "R", "S"],
+    "cover": ["K", "AH1", "V", "ER0"],
+    "cross": ["K", "R", "AO1", "S"],
+    "cup": ["K", "AH1", "P"],
+    "cut": ["K", "AH1", "T"],
+    // ---- D ----
+    "dance": ["D", "AE1", "N", "S"],
+    "danger": ["D", "EY1", "N", "JH", "ER0"],
+    "dark": ["D", "AA1", "R", "K"],
+    "day": ["D", "EY1"],
+    "dead": ["D", "EH1", "D"],
+    "deal": ["D", "IY1", "L"],
+    "dear": ["D", "IH1", "R"],
+    "decide": ["D", "IH0", "S", "AY1", "D"],
+    "deep": ["D", "IY1", "P"],
+    "develop": ["D", "IH0", "V", "EH1", "L", "AH0", "P"],
+    "did": ["D", "IH1", "D"],
+    "die": ["D", "AY1"],
+    "different": ["D", "IH1", "F", "ER0", "AH0", "N", "T"],
+    "difficult": ["D", "IH1", "F", "AH0", "K", "AH0", "L", "T"],
+    "direct": ["D", "ER0", "EH1", "K", "T"],
+    "do": ["D", "UW1"],
+    "doctor": ["D", "AA1", "K", "T", "ER0"],
+    "does": ["D", "AH1", "Z"],
+    "dog": ["D", "AO1", "G"],
+    "done": ["D", "AH1", "N"],
+    "door": ["D", "AO1", "R"],
+    "down": ["D", "AW1", "N"],
+    "draw": ["D", "R", "AO1"],
+    "dream": ["D", "R", "IY1", "M"],
+    "drink": ["D", "R", "IH1", "NG", "K"],
+    "drive": ["D", "R", "AY1", "V"],
+    "drop": ["D", "R", "AA1", "P"],
+    "dry": ["D", "R", "AY1"],
+    "during": ["D", "UH1", "R", "IH0", "NG"],
+    // ---- E ----
+    "each": ["IY1", "CH"],
+    "ear": ["IH1", "R"],
+    "early": ["ER1", "L", "IY0"],
+    "earth": ["ER1", "TH"],
+    "east": ["IY1", "S", "T"],
+    "easy": ["IY1", "Z", "IY0"],
+    "eat": ["IY1", "T"],
+    "education": ["EH2", "JH", "AH0", "K", "EY1", "SH", "AH0", "N"],
+    "effect": ["IH0", "F", "EH1", "K", "T"],
+    "egg": ["EH1", "G"],
+    "eight": ["EY1", "T"],
+    "either": ["IY1", "DH", "ER0"],
+    "else": ["EH1", "L", "S"],
+    "end": ["EH1", "N", "D"],
+    "energy": ["EH1", "N", "ER0", "JH", "IY0"],
+    "enjoy": ["EH0", "N", "JH", "OY1"],
+    "enough": ["IH0", "N", "AH1", "F"],
+    "even": ["IY1", "V", "AH0", "N"],
+    "evening": ["IY1", "V", "N", "IH0", "NG"],
+    "ever": ["EH1", "V", "ER0"],
+    "every": ["EH1", "V", "R", "IY0"],
+    "example": ["IH0", "G", "Z", "AE1", "M", "P", "AH0", "L"],
+    "experience": ["IH0", "K", "S", "P", "IH1", "R", "IY0", "AH0", "N", "S"],
+    "explain": ["IH0", "K", "S", "P", "L", "EY1", "N"],
+    "eye": ["AY1"],
+    // ---- F ----
+    "face": ["F", "EY1", "S"],
+    "fact": ["F", "AE1", "K", "T"],
+    "fail": ["F", "EY1", "L"],
+    "fall": ["F", "AO1", "L"],
+    "family": ["F", "AE1", "M", "AH0", "L", "IY0"],
+    "far": ["F", "AA1", "R"],
+    "farm": ["F", "AA1", "R", "M"],
+    "fast": ["F", "AE1", "S", "T"],
+    "father": ["F", "AA1", "DH", "ER0"],
+    "fear": ["F", "IH1", "R"],
+    "feel": ["F", "IY1", "L"],
+    "feet": ["F", "IY1", "T"],
+    "few": ["F", "Y", "UW1"],
+    "field": ["F", "IY1", "L", "D"],
+    "fight": ["F", "AY1", "T"],
+    "fill": ["F", "IH1", "L"],
+    "final": ["F", "AY1", "N", "AH0", "L"],
+    "find": ["F", "AY1", "N", "D"],
+    "fine": ["F", "AY1", "N"],
+    "fire": ["F", "AY1", "ER0"],
+    "first": ["F", "ER1", "S", "T"],
+    "fish": ["F", "IH1", "SH"],
+    "five": ["F", "AY1", "V"],
+    "floor": ["F", "L", "AO1", "R"],
+    "flow": ["F", "L", "OW1"],
+    "fly": ["F", "L", "AY1"],
+    "follow": ["F", "AA1", "L", "OW0"],
+    "food": ["F", "UW1", "D"],
+    "foot": ["F", "UH1", "T"],
+    "for": ["F", "AO1", "R"],
+    "force": ["F", "AO1", "R", "S"],
+    "forest": ["F", "AO1", "R", "AH0", "S", "T"],
+    "forget": ["F", "ER0", "G", "EH1", "T"],
+    "form": ["F", "AO1", "R", "M"],
+    "found": ["F", "AW1", "N", "D"],
+    "four": ["F", "AO1", "R"],
+    "fox": ["F", "AA1", "K", "S"],
+    "free": ["F", "R", "IY1"],
+    "fresh": ["F", "R", "EH1", "SH"],
+    "friend": ["F", "R", "EH1", "N", "D"],
+    "from": ["F", "R", "AH1", "M"],
+    "front": ["F", "R", "AH1", "N", "T"],
+    "fruit": ["F", "R", "UW1", "T"],
+    "full": ["F", "UH1", "L"],
+    "fun": ["F", "AH1", "N"],
+    "future": ["F", "Y", "UW1", "CH", "ER0"],
+    // ---- G ----
+    "game": ["G", "EY1", "M"],
+    "garden": ["G", "AA1", "R", "D", "AH0", "N"],
+    "gave": ["G", "EY1", "V"],
+    "general": ["JH", "EH1", "N", "ER0", "AH0", "L"],
+    "get": ["G", "EH1", "T"],
+    "girl": ["G", "ER1", "L"],
+    "give": ["G", "IH1", "V"],
+    "glad": ["G", "L", "AE1", "D"],
+    "glass": ["G", "L", "AE1", "S"],
+    "go": ["G", "OW1"],
+    "god": ["G", "AA1", "D"],
+    "gold": ["G", "OW1", "L", "D"],
+    "gone": ["G", "AO1", "N"],
+    "good": ["G", "UH1", "D"],
+    "got": ["G", "AA1", "T"],
+    "government": ["G", "AH1", "V", "ER0", "N", "M", "AH0", "N", "T"],
+    "grass": ["G", "R", "AE1", "S"],
+    "great": ["G", "R", "EY1", "T"],
+    "green": ["G", "R", "IY1", "N"],
+    "grew": ["G", "R", "UW1"],
+    "ground": ["G", "R", "AW1", "N", "D"],
+    "group": ["G", "R", "UW1", "P"],
+    "grow": ["G", "R", "OW1"],
+    "guess": ["G", "EH1", "S"],
+    "gun": ["G", "AH1", "N"],
+    // ---- H ----
+    "had": ["HH", "AE1", "D"],
+    "hair": ["HH", "EH1", "R"],
+    "half": ["HH", "AE1", "F"],
+    "hand": ["HH", "AE1", "N", "D"],
+    "happen": ["HH", "AE1", "P", "AH0", "N"],
+    "happy": ["HH", "AE1", "P", "IY0"],
+    "hard": ["HH", "AA1", "R", "D"],
+    "has": ["HH", "AE1", "Z"],
+    "hat": ["HH", "AE1", "T"],
+    "have": ["HH", "AE1", "V"],
+    "he": ["HH", "IY1"],
+    "head": ["HH", "EH1", "D"],
+    "hear": ["HH", "IH1", "R"],
+    "heart": ["HH", "AA1", "R", "T"],
+    "heat": ["HH", "IY1", "T"],
+    "heavy": ["HH", "EH1", "V", "IY0"],
+    "help": ["HH", "EH1", "L", "P"],
+    "her": ["HH", "ER1"],
+    "here": ["HH", "IH1", "R"],
+    "high": ["HH", "AY1"],
+    "hill": ["HH", "IH1", "L"],
+    "him": ["HH", "IH1", "M"],
+    "his": ["HH", "IH1", "Z"],
+    "history": ["HH", "IH1", "S", "T", "ER0", "IY0"],
+    "hit": ["HH", "IH1", "T"],
+    "hold": ["HH", "OW1", "L", "D"],
+    "hole": ["HH", "OW1", "L"],
+    "home": ["HH", "OW1", "M"],
+    "hope": ["HH", "OW1", "P"],
+    "horse": ["HH", "AO1", "R", "S"],
+    "hot": ["HH", "AA1", "T"],
+    "hour": ["AW1", "ER0"],
+    "house": ["HH", "AW1", "S"],
+    "how": ["HH", "AW1"],
+    "however": ["HH", "AW0", "EH1", "V", "ER0"],
+    "human": ["HH", "Y", "UW1", "M", "AH0", "N"],
+    "hundred": ["HH", "AH1", "N", "D", "R", "AH0", "D"],
+    "hunt": ["HH", "AH1", "N", "T"],
+    "hurry": ["HH", "ER1", "IY0"],
+    // ---- I ----
+    "i": ["AY1"],
+    "ice": ["AY1", "S"],
+    "idea": ["AY0", "D", "IY1", "AH0"],
+    "if": ["IH1", "F"],
+    "imagine": ["IH0", "M", "AE1", "JH", "AH0", "N"],
+    "important": ["IH0", "M", "P", "AO1", "R", "T", "AH0", "N", "T"],
+    "in": ["IH1", "N"],
+    "include": ["IH0", "N", "K", "L", "UW1", "D"],
+    "increase": ["IH0", "N", "K", "R", "IY1", "S"],
+    "inside": ["IH0", "N", "S", "AY1", "D"],
+    "instead": ["IH0", "N", "S", "T", "EH1", "D"],
+    "interest": ["IH1", "N", "T", "R", "AH0", "S", "T"],
+    "into": ["IH1", "N", "T", "UW0"],
+    "iron": ["AY1", "ER0", "N"],
+    "is": ["IH1", "Z"],
+    "island": ["AY1", "L", "AH0", "N", "D"],
+    "it": ["IH1", "T"],
+    "its": ["IH1", "T", "S"],
+    // ---- J ----
+    "job": ["JH", "AA1", "B"],
+    "join": ["JH", "OY1", "N"],
+    "joy": ["JH", "OY1"],
+    "jump": ["JH", "AH1", "M", "P"],
+    "just": ["JH", "AH1", "S", "T"],
+    // ---- K ----
+    "keep": ["K", "IY1", "P"],
+    "kill": ["K", "IH1", "L"],
+    "kind": ["K", "AY1", "N", "D"],
+    "king": ["K", "IH1", "NG"],
+    "kitchen": ["K", "IH1", "CH", "AH0", "N"],
+    "knee": ["N", "IY1"],
+    "knew": ["N", "UW1"],
+    "know": ["N", "OW1"],
+    // ---- L ----
+    "lady": ["L", "EY1", "D", "IY0"],
+    "lake": ["L", "EY1", "K"],
+    "land": ["L", "AE1", "N", "D"],
+    "language": ["L", "AE1", "NG", "G", "W", "AH0", "JH"],
+    "large": ["L", "AA1", "R", "JH"],
+    "last": ["L", "AE1", "S", "T"],
+    "late": ["L", "EY1", "T"],
+    "later": ["L", "EY1", "T", "ER0"],
+    "laugh": ["L", "AE1", "F"],
+    "law": ["L", "AO1"],
+    "lay": ["L", "EY1"],
+    "lead": ["L", "IY1", "D"],
+    "learn": ["L", "ER1", "N"],
+    "least": ["L", "IY1", "S", "T"],
+    "leave": ["L", "IY1", "V"],
+    "left": ["L", "EH1", "F", "T"],
+    "less": ["L", "EH1", "S"],
+    "lesson": ["L", "EH1", "S", "AH0", "N"],
+    "let": ["L", "EH1", "T"],
+    "letter": ["L", "EH1", "T", "ER0"],
+    "level": ["L", "EH1", "V", "AH0", "L"],
+    "lie": ["L", "AY1"],
+    "life": ["L", "AY1", "F"],
+    "light": ["L", "AY1", "T"],
+    "like": ["L", "AY1", "K"],
+    "line": ["L", "AY1", "N"],
+    "list": ["L", "IH1", "S", "T"],
+    "listen": ["L", "IH1", "S", "AH0", "N"],
+    "little": ["L", "IH1", "T", "AH0", "L"],
+    "live": ["L", "IH1", "V"],
+    "long": ["L", "AO1", "NG"],
+    "look": ["L", "UH1", "K"],
+    "lost": ["L", "AO1", "S", "T"],
+    "lot": ["L", "AA1", "T"],
+    "love": ["L", "AH1", "V"],
+    "low": ["L", "OW1"],
+    // ---- M ----
+    "machine": ["M", "AH0", "SH", "IY1", "N"],
+    "made": ["M", "EY1", "D"],
+    "make": ["M", "EY1", "K"],
+    "man": ["M", "AE1", "N"],
+    "many": ["M", "EH1", "N", "IY0"],
+    "map": ["M", "AE1", "P"],
+    "mark": ["M", "AA1", "R", "K"],
+    "market": ["M", "AA1", "R", "K", "AH0", "T"],
+    "master": ["M", "AE1", "S", "T", "ER0"],
+    "mat": ["M", "AE1", "T"],
+    "match": ["M", "AE1", "CH"],
+    "matter": ["M", "AE1", "T", "ER0"],
+    "may": ["M", "EY1"],
+    "me": ["M", "IY1"],
+    "mean": ["M", "IY1", "N"],
+    "measure": ["M", "EH1", "ZH", "ER0"],
+    "meet": ["M", "IY1", "T"],
+    "men": ["M", "EH1", "N"],
+    "might": ["M", "AY1", "T"],
+    "mile": ["M", "AY1", "L"],
+    "milk": ["M", "IH1", "L", "K"],
+    "million": ["M", "IH1", "L", "Y", "AH0", "N"],
+    "mind": ["M", "AY1", "N", "D"],
+    "minute": ["M", "IH1", "N", "AH0", "T"],
+    "miss": ["M", "IH1", "S"],
+    "modern": ["M", "AA1", "D", "ER0", "N"],
+    "moment": ["M", "OW1", "M", "AH0", "N", "T"],
+    "money": ["M", "AH1", "N", "IY0"],
+    "month": ["M", "AH1", "N", "TH"],
+    "moon": ["M", "UW1", "N"],
+    "more": ["M", "AO1", "R"],
+    "morning": ["M", "AO1", "R", "N", "IH0", "NG"],
+    "most": ["M", "OW1", "S", "T"],
+    "mother": ["M", "AH1", "DH", "ER0"],
+    "mountain": ["M", "AW1", "N", "T", "AH0", "N"],
+    "mouth": ["M", "AW1", "TH"],
+    "move": ["M", "UW1", "V"],
+    "much": ["M", "AH1", "CH"],
+    "music": ["M", "Y", "UW1", "Z", "IH0", "K"],
+    "must": ["M", "AH1", "S", "T"],
+    "my": ["M", "AY1"],
+    // ---- N ----
+    "name": ["N", "EY1", "M"],
+    "nature": ["N", "EY1", "CH", "ER0"],
+    "near": ["N", "IH1", "R"],
+    "need": ["N", "IY1", "D"],
+    "never": ["N", "EH1", "V", "ER0"],
+    "new": ["N", "UW1"],
+    "next": ["N", "EH1", "K", "S", "T"],
+    "night": ["N", "AY1", "T"],
+    "nine": ["N", "AY1", "N"],
+    "no": ["N", "OW1"],
+    "noise": ["N", "OY1", "Z"],
+    "none": ["N", "AH1", "N"],
+    "nor": ["N", "AO1", "R"],
+    "north": ["N", "AO1", "R", "TH"],
+    "nose": ["N", "OW1", "Z"],
+    "not": ["N", "AA1", "T"],
+    "note": ["N", "OW1", "T"],
+    "nothing": ["N", "AH1", "TH", "IH0", "NG"],
+    "notice": ["N", "OW1", "T", "AH0", "S"],
+    "now": ["N", "AW1"],
+    "number": ["N", "AH1", "M", "B", "ER0"],
+    // ---- O ----
+    "object": ["AA1", "B", "JH", "EH0", "K", "T"],
+    "ocean": ["OW1", "SH", "AH0", "N"],
+    "of": ["AH1", "V"],
+    "off": ["AO1", "F"],
+    "offer": ["AO1", "F", "ER0"],
+    "office": ["AO1", "F", "AH0", "S"],
+    "often": ["AO1", "F", "AH0", "N"],
+    "oh": ["OW1"],
+    "oil": ["OY1", "L"],
+    "old": ["OW1", "L", "D"],
+    "on": ["AA1", "N"],
+    "once": ["W", "AH1", "N", "S"],
+    "one": ["W", "AH1", "N"],
+    "only": ["OW1", "N", "L", "IY0"],
+    "open": ["OW1", "P", "AH0", "N"],
+    "or": ["AO1", "R"],
+    "order": ["AO1", "R", "D", "ER0"],
+    "other": ["AH1", "DH", "ER0"],
+    "our": ["AW1", "ER0"],
+    "out": ["AW1", "T"],
+    "over": ["OW1", "V", "ER0"],
+    "own": ["OW1", "N"],
+    // ---- P ----
+    "page": ["P", "EY1", "JH"],
+    "pain": ["P", "EY1", "N"],
+    "pair": ["P", "EH1", "R"],
+    "paper": ["P", "EY1", "P", "ER0"],
+    "part": ["P", "AA1", "R", "T"],
+    "pass": ["P", "AE1", "S"],
+    "past": ["P", "AE1", "S", "T"],
+    "pat": ["P", "AE1", "T"],
+    "pay": ["P", "EY1"],
+    "people": ["P", "IY1", "P", "AH0", "L"],
+    "perhaps": ["P", "ER0", "HH", "AE1", "P", "S"],
+    "person": ["P", "ER1", "S", "AH0", "N"],
+    "pick": ["P", "IH1", "K"],
+    "picture": ["P", "IH1", "K", "CH", "ER0"],
+    "piece": ["P", "IY1", "S"],
+    "place": ["P", "L", "EY1", "S"],
+    "plan": ["P", "L", "AE1", "N"],
+    "plant": ["P", "L", "AE1", "N", "T"],
+    "play": ["P", "L", "EY1"],
+    "please": ["P", "L", "IY1", "Z"],
+    "point": ["P", "OY1", "N", "T"],
+    "poor": ["P", "UH1", "R"],
+    "possible": ["P", "AA1", "S", "AH0", "B", "AH0", "L"],
+    "power": ["P", "AW1", "ER0"],
+    "present": ["P", "R", "EH1", "Z", "AH0", "N", "T"],
+    "president": ["P", "R", "EH1", "Z", "AH0", "D", "AH0", "N", "T"],
+    "pretty": ["P", "R", "IH1", "T", "IY0"],
+    "problem": ["P", "R", "AA1", "B", "L", "AH0", "M"],
+    "produce": ["P", "R", "AH0", "D", "UW1", "S"],
+    "program": ["P", "R", "OW1", "G", "R", "AE2", "M"],
+    "provide": ["P", "R", "AH0", "V", "AY1", "D"],
+    "public": ["P", "AH1", "B", "L", "IH0", "K"],
+    "pull": ["P", "UH1", "L"],
+    "push": ["P", "UH1", "SH"],
+    "put": ["P", "UH1", "T"],
+    // ---- Q ----
+    "question": ["K", "W", "EH1", "S", "CH", "AH0", "N"],
+    "quick": ["K", "W", "IH1", "K"],
+    "quiet": ["K", "W", "AY1", "AH0", "T"],
+    "quite": ["K", "W", "AY1", "T"],
+    // ---- R ----
+    "rain": ["R", "EY1", "N"],
+    "ran": ["R", "AE1", "N"],
+    "reach": ["R", "IY1", "CH"],
+    "read": ["R", "IY1", "D"],
+    "ready": ["R", "EH1", "D", "IY0"],
+    "real": ["R", "IY1", "L"],
+    "reason": ["R", "IY1", "Z", "AH0", "N"],
+    "receive": ["R", "IH0", "S", "IY1", "V"],
+    "record": ["R", "EH1", "K", "ER0", "D"],
+    "red": ["R", "EH1", "D"],
+    "remember": ["R", "IH0", "M", "EH1", "M", "B", "ER0"],
+    "rest": ["R", "EH1", "S", "T"],
+    "result": ["R", "IH0", "Z", "AH1", "L", "T"],
+    "rich": ["R", "IH1", "CH"],
+    "ride": ["R", "AY1", "D"],
+    "right": ["R", "AY1", "T"],
+    "ring": ["R", "IH1", "NG"],
+    "rise": ["R", "AY1", "Z"],
+    "river": ["R", "IH1", "V", "ER0"],
+    "road": ["R", "OW1", "D"],
+    "rock": ["R", "AA1", "K"],
+    "room": ["R", "UW1", "M"],
+    "round": ["R", "AW1", "N", "D"],
+    "rule": ["R", "UW1", "L"],
+    "run": ["R", "AH1", "N"],
+    // ---- S ----
+    "safe": ["S", "EY1", "F"],
+    "said": ["S", "EH1", "D"],
+    "same": ["S", "EY1", "M"],
+    "sat": ["S", "AE1", "T"],
+    "save": ["S", "EY1", "V"],
+    "saw": ["S", "AO1"],
+    "say": ["S", "EY1"],
+    "school": ["S", "K", "UW1", "L"],
+    "science": ["S", "AY1", "AH0", "N", "S"],
+    "sea": ["S", "IY1"],
+    "season": ["S", "IY1", "Z", "AH0", "N"],
+    "second": ["S", "EH1", "K", "AH0", "N", "D"],
+    "see": ["S", "IY1"],
+    "seem": ["S", "IY1", "M"],
+    "self": ["S", "EH1", "L", "F"],
+    "send": ["S", "EH1", "N", "D"],
+    "sentence": ["S", "EH1", "N", "T", "AH0", "N", "S"],
+    "serve": ["S", "ER1", "V"],
+    "set": ["S", "EH1", "T"],
+    "seven": ["S", "EH1", "V", "AH0", "N"],
+    "several": ["S", "EH1", "V", "ER0", "AH0", "L"],
+    "she": ["SH", "IY1"],
+    "ship": ["SH", "IH1", "P"],
+    "short": ["SH", "AO1", "R", "T"],
+    "should": ["SH", "UH1", "D"],
+    "show": ["SH", "OW1"],
+    "side": ["S", "AY1", "D"],
+    "simple": ["S", "IH1", "M", "P", "AH0", "L"],
+    "since": ["S", "IH1", "N", "S"],
+    "sing": ["S", "IH1", "NG"],
+    "sister": ["S", "IH1", "S", "T", "ER0"],
+    "sit": ["S", "IH1", "T"],
+    "six": ["S", "IH1", "K", "S"],
+    "size": ["S", "AY1", "Z"],
+    "sleep": ["S", "L", "IY1", "P"],
+    "slow": ["S", "L", "OW1"],
+    "small": ["S", "M", "AO1", "L"],
+    "smile": ["S", "M", "AY1", "L"],
+    "snow": ["S", "N", "OW1"],
+    "so": ["S", "OW1"],
+    "some": ["S", "AH1", "M"],
+    "something": ["S", "AH1", "M", "TH", "IH0", "NG"],
+    "sometimes": ["S", "AH1", "M", "T", "AY2", "M", "Z"],
+    "son": ["S", "AH1", "N"],
+    "song": ["S", "AO1", "NG"],
+    "soon": ["S", "UW1", "N"],
+    "sort": ["S", "AO1", "R", "T"],
+    "sound": ["S", "AW1", "N", "D"],
+    "south": ["S", "AW1", "TH"],
+    "space": ["S", "P", "EY1", "S"],
+    "speak": ["S", "P", "IY1", "K"],
+    "special": ["S", "P", "EH1", "SH", "AH0", "L"],
+    "speed": ["S", "P", "IY1", "D"],
+    "spring": ["S", "P", "R", "IH1", "NG"],
+    "stand": ["S", "T", "AE1", "N", "D"],
+    "star": ["S", "T", "AA1", "R"],
+    "start": ["S", "T", "AA1", "R", "T"],
+    "state": ["S", "T", "EY1", "T"],
+    "stay": ["S", "T", "EY1"],
+    "step": ["S", "T", "EH1", "P"],
+    "still": ["S", "T", "IH1", "L"],
+    "stone": ["S", "T", "OW1", "N"],
+    "stop": ["S", "T", "AA1", "P"],
+    "story": ["S", "T", "AO1", "R", "IY0"],
+    "straight": ["S", "T", "R", "EY1", "T"],
+    "street": ["S", "T", "R", "IY1", "T"],
+    "strong": ["S", "T", "R", "AO1", "NG"],
+    "student": ["S", "T", "UW1", "D", "AH0", "N", "T"],
+    "study": ["S", "T", "AH1", "D", "IY0"],
+    "such": ["S", "AH1", "CH"],
+    "sun": ["S", "AH1", "N"],
+    "sure": ["SH", "UH1", "R"],
+    "surprise": ["S", "ER0", "P", "R", "AY1", "Z"],
+    "system": ["S", "IH1", "S", "T", "AH0", "M"],
+    // ---- T ----
+    "table": ["T", "EY1", "B", "AH0", "L"],
+    "take": ["T", "EY1", "K"],
+    "talk": ["T", "AO1", "K"],
+    "teach": ["T", "IY1", "CH"],
+    "tell": ["T", "EH1", "L"],
+    "ten": ["T", "EH1", "N"],
+    "test": ["T", "EH1", "S", "T"],
+    "than": ["DH", "AE1", "N"],
+    "thank": ["TH", "AE1", "NG", "K"],
+    "that": ["DH", "AE1", "T"],
+    "the": ["DH", "AH0"],
+    "their": ["DH", "EH1", "R"],
+    "them": ["DH", "EH1", "M"],
+    "then": ["DH", "EH1", "N"],
+    "there": ["DH", "EH1", "R"],
+    "these": ["DH", "IY1", "Z"],
+    "they": ["DH", "EY1"],
+    "thick": ["TH", "IH1", "K"],
+    "thin": ["TH", "IH1", "N"],
+    "thing": ["TH", "IH1", "NG"],
+    "think": ["TH", "IH1", "NG", "K"],
+    "third": ["TH", "ER1", "D"],
+    "this": ["DH", "IH1", "S"],
+    "those": ["DH", "OW1", "Z"],
+    "though": ["DH", "OW1"],
+    "thought": ["TH", "AO1", "T"],
+    "thousand": ["TH", "AW1", "Z", "AH0", "N", "D"],
+    "three": ["TH", "R", "IY1"],
+    "through": ["TH", "R", "UW1"],
+    "throw": ["TH", "R", "OW1"],
+    "time": ["T", "AY1", "M"],
+    "to": ["T", "UW1"],
+    "today": ["T", "AH0", "D", "EY1"],
+    "together": ["T", "AH0", "G", "EH1", "DH", "ER0"],
+    "told": ["T", "OW1", "L", "D"],
+    "too": ["T", "UW1"],
+    "took": ["T", "UH1", "K"],
+    "top": ["T", "AA1", "P"],
+    "touch": ["T", "AH1", "CH"],
+    "toward": ["T", "AH0", "W", "AO1", "R", "D"],
+    "town": ["T", "AW1", "N"],
+    "trade": ["T", "R", "EY1", "D"],
+    "train": ["T", "R", "EY1", "N"],
+    "travel": ["T", "R", "AE1", "V", "AH0", "L"],
+    "tree": ["T", "R", "IY1"],
+    "trouble": ["T", "R", "AH1", "B", "AH0", "L"],
+    "true": ["T", "R", "UW1"],
+    "trust": ["T", "R", "AH1", "S", "T"],
+    "try": ["T", "R", "AY1"],
+    "turn": ["T", "ER1", "N"],
+    "two": ["T", "UW1"],
+    // ---- U ----
+    "under": ["AH1", "N", "D", "ER0"],
+    "understand": ["AH2", "N", "D", "ER0", "S", "T", "AE1", "N", "D"],
+    "until": ["AH0", "N", "T", "IH1", "L"],
+    "up": ["AH1", "P"],
+    "upon": ["AH0", "P", "AA1", "N"],
+    "us": ["AH1", "Z"],
+    "use": ["Y", "UW1", "Z"],
+    "usually": ["Y", "UW1", "ZH", "AH0", "L", "IY0"],
+    // ---- V ----
+    "value": ["V", "AE1", "L", "Y", "UW0"],
+    "very": ["V", "EH1", "R", "IY0"],
+    "village": ["V", "IH1", "L", "IH0", "JH"],
+    "visit": ["V", "IH1", "Z", "IH0", "T"],
+    "voice": ["V", "OY1", "S"],
+    // ---- W ----
+    "wait": ["W", "EY1", "T"],
+    "walk": ["W", "AO1", "K"],
+    "wall": ["W", "AO1", "L"],
+    "want": ["W", "AA1", "N", "T"],
+    "war": ["W", "AO1", "R"],
+    "warm": ["W", "AO1", "R", "M"],
+    "was": ["W", "AA1", "Z"],
+    "wash": ["W", "AA1", "SH"],
+    "watch": ["W", "AA1", "CH"],
+    "water": ["W", "AO1", "T", "ER0"],
+    "way": ["W", "EY1"],
+    "we": ["W", "IY1"],
+    "weather": ["W", "EH1", "DH", "ER0"],
+    "week": ["W", "IY1", "K"],
+    "well": ["W", "EH1", "L"],
+    "went": ["W", "EH1", "N", "T"],
+    "were": ["W", "ER1"],
+    "west": ["W", "EH1", "S", "T"],
+    "what": ["W", "AH1", "T"],
+    "wheel": ["W", "IY1", "L"],
+    "when": ["W", "EH1", "N"],
+    "where": ["W", "EH1", "R"],
+    "whether": ["W", "EH1", "DH", "ER0"],
+    "which": ["W", "IH1", "CH"],
+    "while": ["W", "AY1", "L"],
+    "white": ["W", "AY1", "T"],
+    "who": ["HH", "UW1"],
+    "whole": ["HH", "OW1", "L"],
+    "why": ["W", "AY1"],
+    "wide": ["W", "AY1", "D"],
+    "wife": ["W", "AY1", "F"],
+    "will": ["W", "IH1", "L"],
+    "win": ["W", "IH1", "N"],
+    "wind": ["W", "IH1", "N", "D"],
+    "window": ["W", "IH1", "N", "D", "OW0"],
+    "winter": ["W", "IH1", "N", "T", "ER0"],
+    "wish": ["W", "IH1", "SH"],
+    "with": ["W", "IH1", "DH"],
+    "without": ["W", "IH0", "TH", "AW1", "T"],
+    "woman": ["W", "UH1", "M", "AH0", "N"],
+    "women": ["W", "IH1", "M", "AH0", "N"],
+    "wonder": ["W", "AH1", "N", "D", "ER0"],
+    "wood": ["W", "UH1", "D"],
+    "word": ["W", "ER1", "D"],
+    "work": ["W", "ER1", "K"],
+    "world": ["W", "ER1", "L", "D"],
+    "worry": ["W", "ER1", "IY0"],
+    "would": ["W", "UH1", "D"],
+    "write": ["R", "AY1", "T"],
+    "wrong": ["R", "AO1", "NG"],
+    // ---- Y ----
+    "year": ["Y", "IH1", "R"],
+    "yellow": ["Y", "EH1", "L", "OW0"],
+    "yes": ["Y", "EH1", "S"],
+    "yesterday": ["Y", "EH1", "S", "T", "ER0", "D", "EY2"],
+    "yet": ["Y", "EH1", "T"],
+    "you": ["Y", "UW1"],
+    "young": ["Y", "AH1", "NG"],
+    "your": ["Y", "AO1", "R"],
+    // ---- Z ----
+    "zoo": ["Z", "UW1"],
+};
+
+// ======================== GRAPHEME TO PHONEME FALLBACK ========================
+
+/**
+ * Basic rule-based grapheme-to-phoneme converter for English words not in the
+ * CMU dictionary. Produces approximate ARPAbet phonemes from spelling.
+ * Not perfect, but good enough for viseme-level matching.
+ *
+ * @param {string} word — lowercase, letters only
+ * @returns {string[]} Array of ARPAbet phoneme strings
+ */
+export function approximatePhonemes(word) {
+    if (!word || word.length === 0) return [];
+
+    const w = word.toLowerCase().replace(/[^a-z]/g, '');
+    if (w.length === 0) return [];
+
+    const phonemes = [];
+    let i = 0;
+
+    // Detect silent-e at end of word (magic-e)
+    const hasMagicE = w.length > 2 && w[w.length - 1] === 'e' &&
+        !'aeiou'.includes(w[w.length - 2]) && 'aeiou'.includes(w[w.length - 3] || '');
+
+    const effectiveLen = hasMagicE ? w.length - 1 : w.length;
+
+    // Helper: is position a vowel?
+    const isVowel = (pos) => pos < w.length && 'aeiou'.includes(w[pos]);
+    // Is this vowel long? (magic-e, or followed by single consonant + vowel)
+    const isLongVowel = (pos) => {
+        if (hasMagicE && pos === effectiveLen - 2) return true;
+        if (pos + 2 < w.length && !isVowel(pos + 1) && isVowel(pos + 2)) return true;
+        return false;
+    };
+
+    while (i < w.length) {
+        // Skip silent e at end
+        if (i === w.length - 1 && hasMagicE && w[i] === 'e') break;
+
+        const c = w[i];
+        const next = i + 1 < w.length ? w[i + 1] : '';
+        const next2 = i + 2 < w.length ? w[i + 2] : '';
+
+        // ---- Multi-character consonant patterns (longest first) ----
+        if (c === 't' && next === 'c' && next2 === 'h') { phonemes.push('CH'); i += 3; continue; }
+        if (c === 's' && next === 'c' && next2 === 'h') { phonemes.push('SH'); i += 3; continue; }
+        if (c === 'd' && next === 'g' && next2 === 'e') { phonemes.push('JH'); i += 3; continue; }
+        if (c === 't' && next === 'i' && next2 === 'o') { phonemes.push('SH', 'AH0', 'N'); i += 4; continue; }
+        if (c === 's' && next === 'i' && next2 === 'o') { phonemes.push('ZH', 'AH0', 'N'); i += 4; continue; }
+
+        if (c === 't' && next === 'h') { phonemes.push(i === 0 ? 'TH' : 'DH'); i += 2; continue; }
+        if (c === 's' && next === 'h') { phonemes.push('SH'); i += 2; continue; }
+        if (c === 'c' && next === 'h') { phonemes.push('CH'); i += 2; continue; }
+        if (c === 'p' && next === 'h') { phonemes.push('F'); i += 2; continue; }
+        if (c === 'w' && next === 'h') { phonemes.push('W'); i += 2; continue; }
+        if (c === 'c' && next === 'k') { phonemes.push('K'); i += 2; continue; }
+        if (c === 'n' && next === 'g') { phonemes.push('NG'); i += 2; continue; }
+        if (c === 'g' && next === 'h') {
+            // gh at end or before t → silent
+            if (i + 2 >= w.length || next2 === 't') { i += 2; continue; }
+            phonemes.push('G'); i += 2; continue;
+        }
+        if (c === 'w' && next === 'r') { phonemes.push('R'); i += 2; continue; }
+        if (c === 'k' && next === 'n') { phonemes.push('N'); i += 2; continue; }
+        if (c === 'g' && next === 'n' && i === 0) { phonemes.push('N'); i += 2; continue; }
+        if (c === 'q' && next === 'u') { phonemes.push('K', 'W'); i += 2; continue; }
+
+        // ---- Vowel digraphs ----
+        if (c === 'i' && next === 'g' && next2 === 'h') { phonemes.push('AY1'); i += 3; continue; }
+        if (c === 'e' && next === 'e') { phonemes.push('IY1'); i += 2; continue; }
+        if (c === 'e' && next === 'a') { phonemes.push('IY1'); i += 2; continue; }
+        if (c === 'o' && next === 'o') { phonemes.push('UW1'); i += 2; continue; }
+        if (c === 'a' && next === 'i') { phonemes.push('EY1'); i += 2; continue; }
+        if (c === 'a' && next === 'y') { phonemes.push('EY1'); i += 2; continue; }
+        if (c === 'o' && next === 'i') { phonemes.push('OY1'); i += 2; continue; }
+        if (c === 'o' && next === 'y') { phonemes.push('OY1'); i += 2; continue; }
+        if (c === 'o' && next === 'u') { phonemes.push('AW1'); i += 2; continue; }
+        if (c === 'o' && next === 'w') {
+            // "ow" can be OW (show) or AW (cow) — default to OW
+            phonemes.push('OW1'); i += 2; continue;
+        }
+        if (c === 'a' && next === 'u') { phonemes.push('AO1'); i += 2; continue; }
+        if (c === 'a' && next === 'w') { phonemes.push('AO1'); i += 2; continue; }
+        if (c === 'i' && next === 'e') { phonemes.push('IY1'); i += 2; continue; }
+        if (c === 'u' && next === 'e') { phonemes.push('UW1'); i += 2; continue; }
+
+        // ---- Single vowels ----
+        if ('aeiou'.includes(c)) {
+            const long = isLongVowel(i);
+            switch (c) {
+                case 'a': phonemes.push(long ? 'EY1' : 'AE1'); break;
+                case 'e': phonemes.push(long ? 'IY1' : 'EH1'); break;
+                case 'i': phonemes.push(long ? 'AY1' : 'IH1'); break;
+                case 'o': phonemes.push(long ? 'OW1' : 'AA1'); break;
+                case 'u': phonemes.push(long ? 'UW1' : 'AH1'); break;
+            }
+            i++; continue;
+        }
+
+        // ---- Single consonants ----
+        switch (c) {
+            case 'b': phonemes.push('B'); break;
+            case 'c': phonemes.push(next === 'e' || next === 'i' || next === 'y' ? 'S' : 'K'); break;
+            case 'd': phonemes.push('D'); break;
+            case 'f': phonemes.push('F'); break;
+            case 'g': phonemes.push(next === 'e' || next === 'i' || next === 'y' ? 'JH' : 'G'); break;
+            case 'h': phonemes.push('HH'); break;
+            case 'j': phonemes.push('JH'); break;
+            case 'k': phonemes.push('K'); break;
+            case 'l': phonemes.push('L'); break;
+            case 'm': phonemes.push('M'); break;
+            case 'n': phonemes.push('N'); break;
+            case 'p': phonemes.push('P'); break;
+            case 'r': phonemes.push('R'); break;
+            case 's':
+                // s between vowels → Z
+                if (i > 0 && isVowel(i - 1) && isVowel(i + 1)) { phonemes.push('Z'); }
+                else { phonemes.push('S'); }
+                break;
+            case 't': phonemes.push('T'); break;
+            case 'v': phonemes.push('V'); break;
+            case 'w': phonemes.push('W'); break;
+            case 'x': phonemes.push('K', 'S'); break;
+            case 'y':
+                // y as consonant at start of word, vowel otherwise
+                if (i === 0) { phonemes.push('Y'); }
+                else { phonemes.push('IY0'); }
+                break;
+            case 'z': phonemes.push('Z'); break;
+            default: break;
+        }
+        i++;
+    }
+
+    return phonemes;
+}
+
+export default CMU_DICT;
