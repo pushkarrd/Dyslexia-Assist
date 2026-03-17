@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, createContext, useContext } from "react";
+import React, { useEffect, useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link, { LinkProps } from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 
@@ -86,7 +87,7 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-full px-4 py-4 hidden md:flex md:flex-col w-[300px] shrink-0",
+        "h-full px-4 py-4 hidden md:flex md:flex-col w-75 shrink-0",
         "glass border-r border-border",
         className
       )}
@@ -109,52 +110,87 @@ export const MobileSidebar = ({
   ...props
 }: React.ComponentProps<"div">) => {
   const { open, setOpen } = useSidebar();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onScroll = () => {
+      setOpen(false);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => window.removeEventListener("scroll", onScroll, true);
+  }, [open, setOpen]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname, setOpen]);
+
   return (
     <>
       <div
         className={cn(
-          "h-14 px-4 flex flex-row md:hidden items-center justify-between w-full shrink-0",
+          "sticky top-0 z-40 h-14 px-4 flex flex-row md:hidden items-center justify-between w-full shrink-0",
           "bg-background/80 backdrop-blur-xl border-b border-border"
         )}
         {...props}
       >
-        <div className="flex justify-end z-20 w-full">
+        <div className="text-sm font-semibold text-foreground/80">Menu</div>
+        <div className="flex justify-end z-20">
           <button
             onClick={() => setOpen(!open)}
-            className="text-foreground p-1"
-            aria-label="Toggle sidebar"
+            className="text-foreground p-2 rounded-lg hover:bg-accent/70 transition-colors duration-200"
+            aria-label={open ? "Close sidebar" : "Open sidebar"}
+            aria-expanded={open}
           >
-            <Menu size={20} />
+            {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ x: "-100%", opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "-100%", opacity: 0 }}
-              transition={{
-                duration: 0.3,
-                ease: "easeInOut",
-              }}
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.button
+              type="button"
+              aria-label="Close sidebar overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              onClick={() => setOpen(false)}
+              className="fixed inset-0 z-90 bg-black/45 backdrop-blur-[1px] md:hidden"
+            />
+
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.28, ease: "easeInOut" }}
               className={cn(
-                "fixed h-full w-full inset-0 z-[100] flex flex-col justify-between",
-                "bg-background/95 backdrop-blur-xl px-6 pb-6 pt-16 sm:p-10",
+                "fixed inset-y-0 left-0 z-100 w-[84vw] max-w-88 md:hidden",
+                "bg-background/95 backdrop-blur-xl border-r border-border",
+                "px-4 pt-4 pb-6",
                 className
               )}
             >
-              <div
-                className="absolute right-10 top-10 z-50 text-foreground"
-              >
-                <button onClick={() => setOpen(!open)} aria-label="Close sidebar">
+              <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
+                <span className="text-sm font-semibold text-foreground/90">NeuroLex Menu</span>
+                <button
+                  onClick={() => setOpen(false)}
+                  aria-label="Close sidebar"
+                  className="rounded-lg p-2 text-foreground hover:bg-accent/70 transition-colors duration-200"
+                >
                   <X size={20} />
                 </button>
               </div>
-              {children}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+
+              <div className="h-[calc(100dvh-5rem)] overflow-y-auto pr-1">{children}</div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };
@@ -170,10 +206,15 @@ export const SidebarLink = ({
   active?: boolean;
   props?: LinkProps;
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, setOpen, animate } = useSidebar();
   return (
     <Link
       href={link.href}
+      onClick={() => {
+        if (typeof window !== "undefined" && window.innerWidth < 768) {
+          setOpen(false);
+        }
+      }}
       className={cn(
         "flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-lg transition-colors duration-200",
         active
